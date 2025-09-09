@@ -9,3 +9,6 @@ Questions:
 Questions:
 - From how large an area are pilot results expected? 
 - Is the primary goal ditch detection or classification such as age condition or intended use?
+
+Questions:
+- How accurate do the ditch detection and classification results need to be?
