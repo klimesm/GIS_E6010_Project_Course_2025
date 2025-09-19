@@ -19,3 +19,12 @@
 - We did some research on the problem and have some idea about the workflow
 - We will contact the client today
 - GitHub discussions could be nice place for communicating on abstract problems that do not require issue on github
+
+What we should learn:
+U-network, papers in the github
+Basics about machine learning, basic idea
+Difference between training, validation, testing
+Neural networks, convolutional networks
+-	Then u-network
+Random forest
+
