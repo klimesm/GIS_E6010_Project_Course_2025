@@ -20,7 +20,25 @@
 - We will contact the client today
 - GitHub discussions could be nice place for communicating on abstract problems that do not require issue on github
 
-## Friday 19.8, 9:30–11:00
+## Wednesday 17.9 
+## Online meeting before client meeting 13:15–13:45
+- We briefly went through what we want to ask in the client meeting about the project
+- We agreed that everyone can ask questions
+  - The assumption is that the meeting will be relaxed and informal, where we will discuss the project in more detail, receive clearer instructions/information about the project goals and implementation and have the chance to ask clarifying questions
+## Client meeting 14-14:30
+- We received clarification from the client during the meeting about the project goals and guidelines which was our main objective.
+   - The most important task is finding the ditches and then categorizing them into new & old ones and by their condition
+- The outcome could, for example, be a QGIS plugin or another open environment
+  - The project is very open-ended and as it progresses we can see what we are able to achieve and what the best implementation method will be
+- AI is not necessarily required in this project
+
+- The meeting was educational and somewhat different from what we had initially expected when preparing for it
+  - We realized that we could have gathered information more effectively if we had thought more carefully in advance about the key questions and the structure of the meeting
+  - --> Next time, we will prepare more thoroughly and ensure that everyone has a clear role in the meeting so that we can make the most of it
+
+- In the end the outcome was clear: we need to obtain the data so that we can move forward to start finding the ditches.
+
+## Friday 19.8, 9:30–11:00 at campus
 **Present:** Nette, Emma, Ville, Matej
 Place: Campus
 
