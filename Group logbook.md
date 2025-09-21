@@ -20,6 +20,45 @@
 - We will contact the client today
 - GitHub discussions could be nice place for communicating on abstract problems that do not require issue on github
 
+## Friday 19.8, 9:30–11:00
+**Present:** Nette, Emma, Ville, Matej
+Place: Campus
+
+**Summary of the meeting:**
+- Reflected on the last meeting and the project so far
+- Discussed the project timeline:
+   - Meeting more, both short online meetings to catch up and also in person meetings at campus
+
+Some roles assigned:
+- Responsible for logbook: Nette (others will add contributions if needed)
+- Responsible for sending emails: Matej
+
+- Discussed the data, the basic steps of machine learning, training data and how to use it to detect ditches.
+- Planned to start experimenting in pairs, trying out different methods and then reviewing together what worked and what didn’t.
+
+Before next time (learning tasks):
+- Study a bit about:
+  - U-Net, Random Forest, (Traditional models), as possible test cases
+  - There are some articles about U-Net and related papers in the GitHub repository.
+
+Review basics of machine learning:
+- Difference between training, validation, and testing
+- Neural networks and convolutional networks
+
+**Next meetings:**
+
+**Monday 10:00 – online**
+
+**Thursday 9:00 – in person at campus**
+
+At the next meetings we’ll:
+- Agree more precisely on roles
+- Decide on three articles/methods to start testing (a total of three different ones at first).
+- Get started!!
+
+
+
+
 What we should learn:
 U-network, papers in the github
 Basics about machine learning, basic idea
