@@ -85,3 +85,29 @@ Neural networks, convolutional networks
 -	Then u-network
 Random forest
 
+
+## Monday 22.9 (online meeting)
+Present: all
+
+- Quick catch-up on where we are and what needs to be done before Thursday’s in-person meeting:
+
+  - We will reach out again regarding the data and try to figure out how we can access it before Thursday (cloud / hard drive, etc.)
+
+  - We discussed preliminarily how to do the preprocessing (Python / TerraScan or similar) to obtain the DTM (ground surface)
+
+  - Data split: training / validation / test
+
+- We selected two different methods: U-Net and Random Forest
+
+- We divided into groups:
+
+  - U-Net: Matej, Ville and …
+
+  - Random Forest: Nette, Janna and …
+
+- Each group will explore their method in more detail and how to apply it in this context before Thursday
+
+**- Next meeting:**
+**Thursday 25.9, 9:00 at campus**
+
+- Data review, preprocessing planning/start and agreeing on next steps
