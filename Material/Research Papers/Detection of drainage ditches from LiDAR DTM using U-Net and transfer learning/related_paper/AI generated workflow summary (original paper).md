@@ -36,10 +36,9 @@
 8. **Deploy & scale**
    - Run inference (≈ **8.6 s/km²** on GTX 1080 Ti as a reference).
    - Produce probability maps and threshold as needed for vectorization.
-   - Plan **transfer learning** if moving to new regions.
-
+     
 ### Practical notes for replication
-- Start with HPMF-only inputs for speed; add indices **only if** accuracy is insufficient.
+- Start with HPMF-only inputs for speed; add indices **only if** accuracy is insufficient (this is something we need to consider if we have enough computing power).
 - Use robust, imbalance-aware metrics (**MCC**) to avoid misleading overall accuracy.
 - Maintain a **labeling handbook** with examples of edge cases to stabilize ground truth quality.
 
