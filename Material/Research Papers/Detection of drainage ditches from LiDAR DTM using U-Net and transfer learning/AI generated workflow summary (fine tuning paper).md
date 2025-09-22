@@ -6,8 +6,8 @@
 
 ## Workflow Steps
 
-1. **Collect LiDAR data**
-   - Create LiDAR-derived **Digital Terrain Model (DTM)**.
+1. **Preprocess LiDAR data**
+   - Create LiDAR-derived **Digital Terrain Model (DTM)** from point cloud.
    - Resolution: 0.5–1 m, depending on dataset (Sweden: 0.5 m; Estonia: 1 m).
 
 2. **Preprocess terrain data**
