@@ -7,7 +7,7 @@
 ## Workflow Steps
 
 1. **Collect LiDAR data**
-   - Input: LiDAR-derived **Digital Terrain Model (DTM)**.
+   - Create LiDAR-derived **Digital Terrain Model (DTM)**.
    - Resolution: 0.5–1 m, depending on dataset (Sweden: 0.5 m; Estonia: 1 m).
 
 2. **Preprocess terrain data**
@@ -24,18 +24,12 @@
    - Swedish dataset (≈1360 pairs) → used for **pre-training**.
    - Estonian dataset (≈72 pairs, from 18 km²) → used for **fine-tuning**.
 
-5. **Pre-training (Swedish data)**
-   - Split data: **80% train / 20% test**.
-   - Train **U-Net** for semantic segmentation (encoder-decoder with skip connections).
-   - Experiment with **kernel sizes (3×3, 5×5, 7×7)** and **data augmentation** (rotations, flips).
-   - Train for **250 epochs**; select weights from epoch with lowest loss.
-
-6. **Fine-tuning (Estonian data)**
+5. **Fine-tuning**
    - Load pre-trained weights from Swedish models.
    - Train further on Estonian dataset (all configurations augmented).
    - Again train for **250 epochs**, extracting best-performing weights.
 
-7. **Prediction & evaluation**
+6. **Prediction & evaluation**
    - Apply fine-tuned model (best = **FT3A, kernel 3×3, augmented**, F1 = 0.766).
    - Use probability threshold (default 0.5; optionally lower to 0.1 for more complete ditch networks).
    - Evaluate using **precision, recall, F1-score** (per land use: peatland > arable > forest).
