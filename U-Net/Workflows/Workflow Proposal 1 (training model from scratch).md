@@ -1,7 +1,3 @@
-# Revised Workflow for Mapping Drainage Ditches with Deep Learning
-
-![Workflow Overview](workflow_proposal_1_flowchart.png)
-
 ## 1. Input Data Preparation
 
 **Point cloud (MML, 5 p/m²):**
