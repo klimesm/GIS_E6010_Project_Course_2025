@@ -2,7 +2,7 @@
 
 ## 1. Input Data Preparation
 
-**Fine-tuning dataset (National Land Survey of Finland, 5 p/m²):**
+**Point Cloud (National Land Survey of Finland, 5 p/m²):**
 - Filter ALS point cloud to retain only ground returns.
 - Generate a Digital Elevation Model (DEM, 0.5 m resolution).
 
