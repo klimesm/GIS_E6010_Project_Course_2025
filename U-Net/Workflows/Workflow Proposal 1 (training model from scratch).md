@@ -27,7 +27,7 @@
 
 ## 4. Model Development
 
-- Encoder–decoder CNN (e.g., U-Net with Xception blocks).
+- Encoder–decoder CNN (U-Net with Xception blocks).
 - **Input:** HPMF (and optional indices).
 - **Output:** pixel-wise ditch probability.
 - Weighted cross-entropy loss for class imbalance.
