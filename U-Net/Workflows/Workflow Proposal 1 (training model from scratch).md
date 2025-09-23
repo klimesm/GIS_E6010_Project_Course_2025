@@ -1,6 +1,6 @@
 # Revised Workflow for Mapping Drainage Ditches with Deep Learning
 
-![Workflow Overview](ditch_workflow_flowchart.svg)
+![Workflow Overview](workflow_proposal_1_flowchart.svg)
 
 ## 1. Input Data Preparation
 
