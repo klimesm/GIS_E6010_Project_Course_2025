@@ -1,3 +1,5 @@
+# Workflow Proposal 1 (training model from scratch)
+
 ## 1. Input Data Preparation
 
 **Point Cloud (National Land Survey of Finland, 5 p/m²):**
