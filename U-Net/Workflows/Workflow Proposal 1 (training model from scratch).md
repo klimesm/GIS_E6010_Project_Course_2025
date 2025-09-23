@@ -20,7 +20,7 @@
 > **Note:** DEM itself is not used directly as model input, only derived indices are.
 
 ## 3. Training Data Construction
-
+- Train/val/test split (e.g., 70/10/20%).
 - Split HPMF (+optional indices) and labels into tiles (e.g., 512×512 px).
 - Remove tiles with <0.1% ditch pixels.
 - Final dataset = paired input (indices) and label raster.
@@ -35,6 +35,5 @@
 
 ## 5. Evaluation & Validation
 
-- Train/val/test split (e.g., 70/10/20%).
 - Metrics: MCC, Cohen’s κ, recall, precision.
 - Visual validation against reference ditch maps.
