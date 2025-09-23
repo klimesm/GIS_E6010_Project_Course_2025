@@ -26,16 +26,15 @@
 - Split HPMF and labels into tiles (e.g., 512×512 px).
 - Remove tiles with <0.1% ditch pixels.
 - Pair each input tile with corresponding label tile.
-- Consider augmentation (rotations, flips).
+- Consider augmentation (e.g. rotations, flips).
 
 ---
 
 ## 4. Model Development
 
 - Encoder–decoder CNN (U-Net with Xception blocks).
-- **Pre-training:** Train model on Swedish dataset.
-- **Fine-tuning:** Continue training with MML dataset.
-- **Input:** HPMF (and optional indices).
+- **Fine-tuning:** Fine-tune the model using the MML dataset and the pre-trained weights.
+- **Input:** HPMF
 - **Output:** pixel-wise ditch probability.
 - Weighted cross-entropy loss for class imbalance.
 - **CRF as the final trainable layer** to smooth discontinuities.
