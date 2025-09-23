@@ -9,8 +9,11 @@
 - Apply buffer (≈2–3 m, based on average ditch width).
 - Refine rasterization using HPMF thresholds.
 
+---
+
 ## 2. Feature Layer Derivation
 - Compute **High-Pass Median Filter (HPMF)** from DEM (kernel ~11).
+- Use HPMF as the feature layer.
 
 **Optional extension:**
 - Derive additional topographic indices from DEM (e.g., impoundment size index).
@@ -18,12 +21,16 @@
 
 > **Note:** DEM itself is not used directly as model input, only derived indices are.
 
+---
+
 ## 3. Training Data Construction
 - Train/val/test split (e.g., 70/10/20%).
 - Split HPMF (+optional indices) and labels into tiles (e.g., 512×512 px).
 - Remove tiles with <0.1% ditch pixels.
 - Pair each input tile with corresponding label tile.
-- Consider augmentation (rotations, flips).
+- Consider augmentation (e.g. rotations, flips).
+
+---
 
 ## 4. Model Development
 
