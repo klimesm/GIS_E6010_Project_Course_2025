@@ -101,9 +101,9 @@ Present: all
 
 - We divided into groups:
 
-  - U-Net: Matej, Ville and …
+  - U-Net: Matej, Ville and Yuhan
 
-  - Random Forest: Nette, Janna and …
+  - Random Forest: Nette, Janna and Emma
 
 - Each group will explore their method in more detail and how to apply it in this context before Thursday
 
@@ -111,3 +111,29 @@ Present: all
 **Thursday 25.9, 9:00 at campus**
 
 - Data review, preprocessing planning/start and agreeing on next steps
+
+## Thursday 25.9
+9:00–11:30 , At campus
+Present: all
+
+- Started by reviewing the data together
+
+- Opened part of the laser scanning data in Terrascan in order to create the DEM model
+
+  - Already filtered → directly obtained the ground layer
+
+  - Done using Terrascan
+
+- Started data preprocessing:
+
+  - Editing laser scanning data (DEM model) and selecting the area for initial testing
+
+  - Adjusting validation data to fit the point cloud data (continuing later)
+
+  - Editing ditch data: creating buffers for ditches and rasterizing (continuing later)
+
+Next: meeting in small groups
+  - Starting to try the methods 
+
+**Next meeting together: online on Friday?**
+ 
