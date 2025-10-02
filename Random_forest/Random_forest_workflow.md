@@ -24,21 +24,20 @@
 **Rasterise the vector layer (Hytky 2023)  with a resolution of 0.5 ∗ 0.5 m for use as a ground-truth for ditch detector**
 **To ensure that all pixels are labelled correctly, label all pixels within three pixels (1,5m) as ditch**
   -> Produces labels with width of 3,5m
-  - Since ditch widths vary (0.5–3.5 m), this widening does not perfectly represent every ditch, but it ensures that most ditch pixels are covered.  
+  - Since ditch widths vary (0.5–3.5 m), this widening does not perfectly represent every ditch, but it ensures that most ditch pixels are covered.
+    
 **To prepare for later evaluation, convert the raster labels into evaluation grid cells:**  
   - Divide the map into 6 × 6 pixel blocks (3 m × 3 m).  
   -> A block is labelled as ditch if at least 25% (≥9/36) of its pixels are ditch. 
 
 ## 4. Extract ditches with digital terrain indices
-- Sky View Factor (SVF): radius = 10 m (SAGA)
-  - represents how much of the sky that is visible from a certain point on the ground 
-- Impoundment Index (dam height): dam length = 3 m (WhiteboxTools)
-- High Pass Median Filter (HPMF): window size = 4.5 m (WhiteboxTools)
-- Slope: degrees (ArcGIS or equivalent)
+**Sky View Factor (SVF): radius = 10 m (SAGA GIS)**
+  - represents how much of the sky that is visible from a certain point on the ground
+    
+**Impoundment Index (dam height): dam length = 3 m (WhiteboxTools)**
 
-## 5. Feature Engineering
-1. Compute local statistics (mean, median, min, max, std) over circular radii (2–6 pixels).
-2. Apply 30 Gabor filters (orientations and frequencies) to SVF and HPMF.
-3. Create amplification features (ditch amplification, non-ditch amplification).
-4. Mask out large ravines/streams using impoundment threshold.
-5. Result: ~81 features reduced to 40 features via Random Forest importance.
+**High Pass Median Filter (HPMF): window size = 4.5 m (WhiteboxTools)**
+
+**Slope: degrees (WhiteboxTools)**
+
+
