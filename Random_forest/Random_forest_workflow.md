@@ -30,7 +30,7 @@
   - Divide the map into 6 × 6 pixel blocks (3 m × 3 m).  
   -> A block is labelled as ditch if at least 25% (≥9/36) of its pixels are ditch. 
 
-## 4. Extract ditches with digital terrain indices
+## 3. Extract ditches with digital terrain indices
 **Sky View Factor (SVF): radius = 10 m (SAGA GIS)**
   - represents how much of the sky that is visible from a certain point on the ground
     
