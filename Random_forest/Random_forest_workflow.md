@@ -1,10 +1,10 @@
 # Detailed Workflow for Ditch Detection Experiment
 
 ## Data and Software Requirements
-- Input data:
+**Input data:**
   - LiDAR ground-classified point cloud (~20 pts/m²) or DEM at 0.5 m resolution
   - Manually digitised ditch vector data for training and evaluation
-- Software:
+**Software:**
   - LAStools (ground classification, DEM generation)
   - SAGA GIS (Sky View Factor)
   - WhiteboxTools (Impoundment Index, HPMF)
