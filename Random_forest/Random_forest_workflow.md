@@ -40,27 +40,7 @@
 
 **Slope: degrees (WhiteboxTools)**
 
-Jaa alue alialueisiin
 
-Tee tilallinen jako (esim. 21 lohkoa ≈196 ha/lohko).
-
-Varaa 10 lohkoa kehitysvaiheeseen (piirteiden ideointi, kynnysten viritys).
-
-Pidä 11 lohkoa täysin erillään loppuarviointiin; käytä näitä K=11 -CV:ssä. [4][5]
-
-
-
-Feature engineering ja malli
-
-Laske valitut piirteet per alialue (ettei reuna-efekteistä vuoda).
-
-Kouluta RF, tee undersampling treenille (ojat + lähipikselit, satunnaisotanta ei-ojista). [8][9]
-
-
-
-Arvioi
-
-K=11 CV niillä 11 pidetyllä lohkolla; raportoi esim. Cohenin κ. [4][5]
 
 
 
