@@ -114,6 +114,7 @@ Present: all
 
 ## Thursday 25.9
 9:00–11:30 , At campus
+
 Present: all
 
 - Started by reviewing the data together
@@ -135,5 +136,27 @@ Present: all
 Next: meeting in small groups
   - Starting to try the methods 
 
-**Next meeting together: online on Friday?**
+**Next meeting together: online on Friday 10:00**
  
+## Friday 3.10 
+Online Meeting (10:00–10:20)
+
+Present: Nette, Emma, Ville, Matej, Yuhan
+
+- Catch-up:
+
+  - Reviewed what we have worked on in small groups
+
+  - Discussed questions that came up regarding datasets and methods
+
+  - Discussed about some codes developed so far, what can be utilized in both cases and clarified the explanations
+
+- Next meeting:
+
+  - Tuesday 7.10 9:00 (online)
+
+  - Go through in more detail where we currently stand and what results have been obtained
+
+  - Assign roles for the client meeting and prepare more thoroughly for its flow
+
+- Client meeting: Wednesday 14:00 (online)
