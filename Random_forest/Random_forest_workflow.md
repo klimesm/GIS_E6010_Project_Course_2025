@@ -8,8 +8,7 @@
 **Software:**
   - LAStools (ground classification, DEM generation)
   - SAGA GIS (Sky View Factor)
-  - WhiteboxTools (Impoundment Index, HPMF)
-  - ArcGIS Pro (slope, hillshade)
+  - WhiteboxTools (Impoundment Index, HPMF, slope)
   - Python (rasterio, numpy, scikit-learn, scikit-image, OpenCV, scipy)
 
 
@@ -21,10 +20,16 @@
 
 
 ## 2. Digitise the Ground Truth Labels (Hytky 2023 data)
-**Rasterise the vector layer (Hytky 2023)  with a resolution of 0.5 ∗ 0.5 m for use as a ground-truth for ditch detector**
-**To ensure that all pixels are labelled correctly, label all pixels within three pixels (1,5m) as ditch**
-  -> Produces labels with width of 3,5m
-  - Since ditch widths vary (0.5–3.5 m), this widening does not perfectly represent every ditch, but it ensures that most ditch pixels are covered.
+**Buffer the ditch vector layer (Hytky 2023) before rasterisation**
+- Using geoprocessing tools, a buffer of 1.75 m is applied to each side of the ditch lines, resulting in a total width of 3.5 m
+
+**Rasterise the buffered vector layer for use as ground-truth for ditch detection**
+  - The buffered vector layer is convert into a raster in QGIS using the Rasterize tool
+      - The burn-in value is set to 1 and the output cell size is defined as 0.5 × 0.5 m, the same resolution as the DEM.
+
+   -> This produces label rasters with a fixed ditch width of 3.5 m.
+   
+   -> Since ditch widths vary naturally (0.5–3.5 m), the buffering does not perfectly represent every ditch, but it ensures that most ditch pixels are included in the ground-truth data.
     
 **To prepare for later evaluation, convert the raster labels into evaluation grid cells:**  
   - Divide the map into 6 × 6 pixel blocks (3 m × 3 m).  
