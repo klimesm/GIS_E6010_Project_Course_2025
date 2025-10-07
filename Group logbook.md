@@ -160,3 +160,27 @@ Present: Nette, Emma, Ville, Matej, Yuhan
   - Assign roles for the client meeting and prepare more thoroughly for its flow
 
 - Client meeting: Wednesday 14:00 (online)
+
+## Tuesday 7.10
+Online meeting (9:00-9:45)
+
+Present: Nette, Emma, Janna, Matej
+
+- Reviewed progress in both projects
+- Both groups seem to be in a good phase, no major dead ends identified
+- Agreed on division of tasks for tomorrow’s client meeting:
+   - Both groups will briefly present their workflow, current progress and raise any questions
+   - Order of presentations: Random Forest first, then U-Net
+     - Shared PowerPoint presentation will be used
+     - At the end: mention observations on inaccuracies in the validation data
+  - Questions to clarify with client:
+      - Validation data – accuracy concerns
+      - Preferred format for the final output data? (so that code can be built accordingly)
+
+- Task division for client meeting:
+    - Meeting lead: Nette
+    - Notes: Janna
+    - Workflow presentation & progress:
+        - Random Forest: Emma
+        - U-Net: Matej?
+- Proposal: schedule another meeting in about three weeks (29.10?)
