@@ -3,7 +3,7 @@
 ## Data and Software Requirements
 **Input data:**
   - LiDAR ground-classified point cloud (~20 pts/m²) or DEM at 0.5 m resolution
-  - Manually digitised ditch vector data for training and evaluation
+  - Hytky ditch vector data for training and evaluation
     
 **Software:**
   - LAStools (ground classification, DEM generation)
