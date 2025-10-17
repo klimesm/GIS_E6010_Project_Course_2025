@@ -184,3 +184,32 @@ Present: Nette, Emma, Janna, Matej
         - Random Forest: Emma
         - U-Net: Matej?
 - Proposal: schedule another meeting in about three weeks (29.10?)
+
+## Wednesday 8.10 second client meeting 
+Online meeting 14-14:30
+
+
+## Friday 17.10
+Online meeting (9:15-9:45)
+
+Present: All
+
+- Both groups have made progress on their projects
+- How can we obtain a larger dataset to use as the base DEM model?
+    - Matej will preprocess the entire dataset and share it with both groups
+- Who will participate in the computing session on Friday, Oct 24?
+  → Access for Ville, Emma and Janna (others can join as well)
+- Ville will reply to Bryan’s message.
+- Are the ditches next to roads considered actual ditches or not? → To be clarified and asked from the client
+
+- Mid-seminar next Wednesday (Oct 22):
+    - Update the previous client meeting slides with current progress
+    - Add a short introduction about the project’s goals, target outcomes and clearly define the next steps
+    - Both groups will update their respective parts of the slides
+    - To-do:
+      - Introduction (Janna)
+      - Next steps
+
+- Next meeting:
+  - Tuesday at 9:15 (online)
+  - The mid-seminar material should be ready by then and we’ll finalize the presentation structure and details
