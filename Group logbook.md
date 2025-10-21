@@ -213,3 +213,27 @@ Present: All
 - Next meeting:
   - Tuesday at 9:15 (online)
   - The mid-seminar material should be ready by then and we’ll finalize the presentation structure and details
+
+## Tuesday 21.10
+Online meeting (9:15-10:10)
+
+Present: All
+
+- Reviewed tomorrow’s mid-seminar presentation and discussed the current results and related reflections
+- Decided how to divide the presentation and who will present each part
+  - Presentation slides can be found in the OneDrive Project Course 2025 folder
+- Reviewed the input data (DEM) and discussed how and in what format it can be integrated into the project
+  - The Random Forest group will check how to include the full dataset prepared by Matej into their own work.
+
+- On Friday there is a computing session
+  - Will clarify if any code modifications are needed or if the environment needs to be changed
+ 
+- We did the mid-term assignment
+  - Wrote down during the meeting by Nette and shared with the rest of the group for editing
+ 
+- **Tomorrow: Mid-term seminar 9:00–13:00**
+  - After the seminar we’ll agree on the next meetings in more detail
+
+- Friday computing session at 11:00.
+
+  
