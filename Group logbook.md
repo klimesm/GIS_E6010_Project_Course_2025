@@ -187,7 +187,7 @@ Present: Nette, Emma, Janna, Matej
 
 ## Wednesday 8.10 second client meeting 
 Online meeting 14-14:30
-
+*Janna will complete
 
 ## Friday 17.10
 Online meeting (9:15-9:45)
