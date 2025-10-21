@@ -40,6 +40,9 @@ data/
 *.laz
 *.las
 *.yaml
+*.xml
+*.csv
+*.json
 
 # ------------------------------
 # Logs and temporary files
