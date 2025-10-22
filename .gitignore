@@ -1,0 +1,58 @@
+# ------------------------------
+# Python cache and compiled files
+# ------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ------------------------------
+# Jupyter Notebook checkpoints
+# ------------------------------
+.ipynb_checkpoints
+
+# ------------------------------
+# PyCharm / IntelliJ IDEA project files
+# ------------------------------
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# ------------------------------
+# VSCode settings (if used)
+# ------------------------------
+.vscode/
+
+# ------------------------------
+# Python virtual environments / Conda environments
+# ------------------------------
+.env/
+.venv/
+env/
+venv/
+aaltoproject/   # local conda environment
+
+# ------------------------------
+# Data and output files (not versioned)
+# ------------------------------
+data/
+*.tif
+*.laz
+*.las
+*.yaml
+*.xml
+*.csv
+*.json
+
+# ------------------------------
+# Logs and temporary files
+# ------------------------------
+*.log
+*.tmp
+*.bak
+
+# ------------------------------
+# OS specific files
+# ------------------------------
+.DS_Store
+Thumbs.db
