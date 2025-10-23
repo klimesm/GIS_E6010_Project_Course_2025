@@ -39,7 +39,6 @@ data/
 *.tif
 *.laz
 *.las
-*.yaml
 *.xml
 *.csv
 *.json
