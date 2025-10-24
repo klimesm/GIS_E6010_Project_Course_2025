@@ -236,4 +236,20 @@ Present: All
 
 - Friday computing session at 11:00.
 
+## Friday 24.10
+Online meeting (11-11:30)
+
+- We went through the platform and how it works and we received useful links to resources and other helpful tips
+- Based on that we will continue with the model training and will reach out if we encounter any issues
+  - Janna (Random Forest) and Ville (U-Net) will test the model training.
+
+- Next group meeting on Monday where we will:
+  - Go through the results
+  - Prepare for the client meeting
+  - Define a clear workflow for the next steps
+  - Divide the group to focus on different parts:
+    - Age
+    - Condition
+    - GIS plugin
+
   
