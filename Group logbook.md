@@ -238,8 +238,9 @@ Present: All
 
 ## Friday 24.10
 Online meeting (11-11:30)
+Present: Ville, Janna, Nette, Emma, Yuhan
 
-- We went through the platform and how it works and we received useful links to resources and other helpful tips
+- We went through the CSC platform and how it works and we received useful links to resources and other helpful tips
 - Based on that we will continue with the model training and will reach out if we encounter any issues
   - Janna (Random Forest) and Ville (U-Net) will test the model training.
 
@@ -252,4 +253,34 @@ Online meeting (11-11:30)
     - Condition
     - GIS plugin
 
-  
+## Monday 27.10
+Online meeting (16-17)
+Present: Nette, Emma, Janna, Ville, Matej
+
+- Project update
+  - Reviewed the progress of model training
+  - Some challenges adapting the code to the CSC environment but work is progressing
+
+- Client Meeting on Wednesday
+  -  Agenda:
+    -  Model results
+    -  Workflow for age and condition estimation
+    -  Challenges encountered (e.g., data quality issues)
+    -  What kind of documentation does the client want?
+
+- Next stpes:
+  - Continue training and refinement of the models
+  - Finalizing model training → evaluating results
+  - Estimating ditch age (based on vegetation, aerial imagery and ditch geometry etc)
+  - Assessing ditch condition
+  - Designing the QGIS plugin
+ 
+- Additionally:
+  - Planning to use Street View/time-series analysis etc to further evaluate model performance
+    - to understand what causes false positives/negatives
+    - what factors explain the model’s behavior
+    - what leads to erroneous predictions
+
+- Next meeting:
+  - Client meeting, Wednesday 29.10 klo 14 -> (online)
+  - Next group meeting will be desided later on
