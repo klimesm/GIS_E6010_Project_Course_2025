@@ -20,6 +20,9 @@
 
 ## Run the Inference Script
 
+Before running the script, open Anaconda Prompt (or PowerShell) and navigate to the directory where inference.py, utils.py, the model file, and other project files are located.
+
+For example:
 1. Make sure your trained model checkpoint (`.ckpt`) and input DEM files are available.  
 2. Run the script:  
    ```bash
