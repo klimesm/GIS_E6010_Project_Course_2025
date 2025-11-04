@@ -20,7 +20,7 @@
 
 ## Run the Inference Script
 
-Before running the script, open Anaconda Prompt (or PowerShell) and navigate to the directory where inference.py, utils.py, the model file, and other project files are located.
+Before running the script, navigate to the directory where inference.py, utils.py, the model file, and other project files are located and make sure you are activated the ditchnet_pytorch environment.
 
 For example:
 1. Make sure your trained model checkpoint (`.ckpt`) and input DEM files are available.  
