@@ -284,3 +284,28 @@ Present: Nette, Emma, Janna, Ville, Matej
 - Next meeting:
   - Client meeting, Wednesday 29.10 klo 14 -> (online)
   - Next group meeting will be desided later on
+
+
+## Wednesday 29.10 Client meeting
+- Emma will write this later
+
+## Tuesday 4.11
+Online meeting (9:15-9:45)
+Present: All
+
+- We now have results from both models and we went through the results
+  - The U-Net model performs better --> we will continue with that
+  - We are currently waiting for a response from the client regarding whether we should proceed with the model trained using Hytky label data or with the more accurate model based on the Swedish study data
+  - Ville is working on the model (implementing necessary changes to integrate it into the plugin)
+- Age determination:
+  - Nette, Emma & Janna
+  - Comparing old vs. new laser scanning data (DEM) with time intervals of 5 and 10 years
+  - User of the model provides the DEMs
+  - The model compares new and old datasets and creates layers based on those observations
+  - Also exploring possibilities to utilize aerial images
+
+- Plugin:
+  - Matej and Yuhan are working on it
+
+- Next week we will also start preparing the documentation and the poster
+- Next meeting: Tuesday, 11.11 at 9:15 (online)
