@@ -23,7 +23,7 @@ def minmax_normalized_image(image, no_data_value=0):
 
     scaled = np.zeros_like(image, dtype=np.float32)
     scaled[~mask] = scaler.fit_transform(valid.reshape(-1, 1)).flatten()
-    scaled[mask] = no_data_value
+    scaled[mask] = np.mean(scaled[~mask])
 
     return scaled
 
@@ -46,8 +46,9 @@ def create_isi_layer(input_path, isi_temp_path):
     return isi_array
 
 
-def create_feature_layer(hpmf_array, isi_array):
+def create_feature_layer(hpmf_array, isi_array, resampled_height, resampled_width):
     feature_array = np.stack((hpmf_array, isi_array), axis=0)
-    feature_array = resize(feature_array, (2, 2048, 2048), order=1, preserve_range=True, anti_aliasing=False)
+    feature_array = resize(feature_array, (2, resampled_height, resampled_width),
+                           order=1, preserve_range=True, anti_aliasing=False)
 
     return feature_array
