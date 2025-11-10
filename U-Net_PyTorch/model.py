@@ -14,7 +14,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
 class DitchNet(L.LightningModule):
-    def __init__(self, encoder_name="efficientnet-b4", pos_weight=5.0, lr=1e-4, in_channels=2):
+    def __init__(self, encoder_name="efficientnet-b4", pos_weight=3.0, lr=1e-4, in_channels=2):
         super().__init__()
         self.save_hyperparameters("encoder_name", "pos_weight", "lr", "in_channels")
 

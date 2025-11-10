@@ -1,9 +1,9 @@
+import torch
+
 import argparse
 from pathlib import Path
 import shutil
 import numpy as np
-
-import torch
 
 from skimage.transform import resize
 import rasterio
@@ -227,7 +227,7 @@ class DitchNetPredictor:
                 print(dem_name)
 
 
-class Main:
+class Main:                     # SIIRRÄ KAIKKI DEFAULT PARAMETRIT MOLEMPIIN
     def __init__(self):
         self.args = self._parse_arguments()
         model = DitchNet.load_from_checkpoint(self.args.model_path)
