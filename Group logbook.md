@@ -287,7 +287,49 @@ Present: Nette, Emma, Janna, Ville, Matej
 
 
 ## Wednesday 29.10 Client meeting
-- Emma will write this later
+- Ville presented the U-Net approach
+  - Ville had previously sent a map showing the current results
+  - Discussion on whether the errors were false positives or actual ditches
+    
+- Janna presented the Random Forest approach
+  - Still problems with the larger dataset
+  - Possible decision to choose U-Net since it performs better
+  - Need to decide whether to continue with Random Forest as well
+    
+- Nette presented the initial workflow for age determination
+  - Problems with age detection: tree cover affects results 
+  - Soil type has a strong influence
+    
+- Matej presented theworkflow with QGIS plugin
+  - QGIS Python does not have ML libraries
+  - Proposed solution with two components:
+    - QGIS plugin – UI integration
+    - Docker environment – ML backend
+      
+- *Documentation and outcomes*
+  - The client will discuss with the Forest Centre what kind of documentation and outcome they need and will send an email about this next week
+- Other wishes for the plugin:
+  - Easy to use
+- Tips for age analysis:
+  - The client will consider if they can help us and inform later
+  - Things to consider: It is possible to calculate vegetation indices also from aerial images; the green band may be needed
+    - The client provided a link to pre-calculated vegetation indices
+ - The results do not necessarily have to be highly accurate, rough time estimate is enough
+ - The client understands thath this is a hard task and the main point is that we have tried different approaches and understood the process
+   and in the documentation, it is important to describe what we have done and found so they can continue our work
+
+- U-Net model discussion
+  - The client asked how the 0.8 probability threshold was chosen
+  - Ville explained he simply tested different values and found 0.8 looked better than 0.5, without a scientific basis
+  - The client noted that 0.8 removes too many ditches, based on their own comparison
+  - Suggestion: add a feature to the plugin allowing the user to set their own probability threshold
+  - Some new ditches were found that are not visible on the base map and the client was pleased with this
+
+- Next steps
+  - The client commented that overall the results look very good
+  - The group will continue their work with improving ditch detection, age classification and QGis plugin
+  - Client will sent info about documentation and possible tips
+  - Next and final meeting on 19.11. 14:00 on Teams.
 
 ## Tuesday 4.11
 Online meeting (9:15-9:45)
