@@ -1,53 +1,20 @@
 import argparse
+
 import lightning as L
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 from pytorch_lightning.loggers import CSVLogger
 from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 
 import os
-import numpy as np
 from pathlib import Path
 
-import tifffile as tiff
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 from sklearn.model_selection import train_test_split
 
+from preprocessing import DitchDataset
 from model import DitchNet
-
-
-class DitchDataset(Dataset):
-    def __init__(self, X, y, transform):
-        self.X = X
-        self.y = y
-
-        # Albumentations transformation pipeline
-        self.transform = transform
-
-    def __len__(self):
-        return len(self.X)
-
-    def __getitem__(self, idx):
-        # Read the TIFF file and convert to float32 for model input
-        feature = tiff.imread(self.X[idx]).astype(np.float32)
-
-        # Move channel dimension from [C, H, W] → [H, W, C] for Albumentations
-        feature = np.moveaxis(feature, 0, -1)
-
-        label = tiff.imread(self.y[idx]).astype(np.uint8)
-
-        # Apply identical transformations to both feature and label
-        augmented = self.transform(image=feature, label=label)
-        feature = augmented["image"]
-        label = augmented["label"]
-
-        # Convert mask to binary (0 or 1), cast to float32, and add channel dimension
-        # Resulting shape: [1, H, W]
-        label = (label > 0).float().unsqueeze(0)
-
-        # Return image tensor and corresponding mask tensor
-        return feature, label
 
 
 class Train:
@@ -55,16 +22,18 @@ class Train:
         # Initialize the segmentation model
         self.model = DitchNet(encoder_name=encoder_name)
 
-        # Build train/validation splits
+        # Split dataset into training and validation sets
         self.X_train, self.X_val, self.y_train, self.y_val = self._construct_train_val_sets(feature_dir, label_dir)
 
+        # Define augmentation and preprocessing pipelines
         self.train_transform, self.val_transform = self._construct_transforms()
 
+        # Create PyTorch DataLoaders for training and validation
         self.train_dataloader, self.validation_dataloader = self._construct_dataloaders(batch_size, num_workers)
 
-        # Set up callbacks and logger
-        self.callbacks = self._set_callbacks()
+        # Initialize logger and callbacks for model tracking and checkpointing
         self.logger = CSVLogger(save_dir=Path.cwd() / "lightning_logs", name="train_logs")
+        self.callbacks = self._set_callbacks()
 
     @staticmethod
     def _construct_train_val_sets(feature_dir, label_dir):
