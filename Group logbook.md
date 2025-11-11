@@ -333,6 +333,7 @@ Present: Nette, Emma, Janna, Ville, Matej
 
 ## Tuesday 4.11
 Online meeting (9:15-9:45)
+
 Present: All
 
 - We now have results from both models and we went through the results
@@ -351,3 +352,32 @@ Present: All
 
 - Next week we will also start preparing the documentation and the poster
 - Next meeting: Tuesday, 11.11 at 9:15 (online)
+
+## Tuesday 11.11
+Online meeting (9:15-9:50)
+
+Present:  Nette, Emma, Janna, Yuhan, Matej
+
+- U-net model for detecting ditches is almost ready and has been modified according to the client’s wishes (producing probability, depth and binary maps)
+- Plugin is a work in progress, still needs all methods to be finalized before it can be built
+- Age determination works but some testing of thresholds and buffer sizes is still ongoing
+  - The goal is to finish the code within the next few days so it can be integrated into the plugin as soon as possible
+
+- Documentation and poster:
+  - Deadline for materials (poster at least ready): 24.11
+  - Also the group logbook deadline: 24.11
+  - (Learning diary deadline: 21.11)
+
+- Task division:
+  - Yuhan takes the lead on the poster
+  - Ville starts working on the model documentation and others add the necessary points
+  - Everyone continue working on unfinished tasks
+  
+- Aim to have everything working this week so next week can focus on final polishing
+
+- Next meeting:
+- In-person at campus on Tuesday 18.11 at 9:15
+  - Go through everything together to make sure all is okay
+  - Prepare the final presentation for the client meeting on Wednesday 19.11 at 14:00->
+  - Work on the poster/divide poster sections
+  - Assign and agree on all finalization tasks (who handles what etc.)
