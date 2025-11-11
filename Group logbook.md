@@ -306,7 +306,7 @@ Present: Nette, Emma, Janna, Ville, Matej
     - QGIS plugin – UI integration
     - Docker environment – ML backend
       
-- **Documentation and outcomes**
+**Documentation and outcomes**
   - The client will discuss with the Forest Centre what kind of documentation and outcome they need and will send an email about this next week
 - Other wishes for the plugin:
   - Easy to use
