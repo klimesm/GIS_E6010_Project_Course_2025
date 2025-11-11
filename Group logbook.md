@@ -306,7 +306,7 @@ Present: Nette, Emma, Janna, Ville, Matej
     - QGIS plugin – UI integration
     - Docker environment – ML backend
       
-- *Documentation and outcomes*
+- **Documentation and outcomes**
   - The client will discuss with the Forest Centre what kind of documentation and outcome they need and will send an email about this next week
 - Other wishes for the plugin:
   - Easy to use
@@ -329,7 +329,7 @@ Present: Nette, Emma, Janna, Ville, Matej
   - The client commented that overall the results look very good
   - The group will continue their work with improving ditch detection, age classification and QGis plugin
   - Client will sent info about documentation and possible tips
-  - Next and final meeting on 19.11. 14:00 on Teams.
+  - **Next and final meeting on 19.11. 14:00 on Teams**
 
 ## Tuesday 4.11
 Online meeting (9:15-9:45)
