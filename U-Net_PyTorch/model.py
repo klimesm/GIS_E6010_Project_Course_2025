@@ -12,6 +12,8 @@ from torchmetrics.classification import (BinaryAccuracy,
 
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
+L.seed_everything(14, workers=True)
+
 
 class DitchNet(L.LightningModule):
     def __init__(self, encoder_name="efficientnet-b4", pos_weight=3.0, lr=1e-4, in_channels=2):
@@ -69,6 +71,8 @@ class DitchNet(L.LightningModule):
             for name, value in zip(("tp", "fp", "tn", "fn"), (tp, fp, tn, fn)):
                 self.log(f"{stage}_{name}", value.float(), on_step=False, on_epoch=True,
                          reduce_fx="sum", sync_dist=True)
+
+        return loss
 
     # Lightning calls these once per phase,
     # each receives a batch (features, labels) from the DataLoader

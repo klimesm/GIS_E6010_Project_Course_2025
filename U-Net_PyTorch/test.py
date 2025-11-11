@@ -67,8 +67,8 @@ class Main:
         self.tester = Test(self.args.model_path,
                            self.args.feature_dir,
                            self.args.label_dir,
-                           self.args.batch_size,
-                           self.args.num_workers)
+                           batch_size=self.args.batch_size,
+                           num_workers=self.args.num_workers)
 
         self.run()
 

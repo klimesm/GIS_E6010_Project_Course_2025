@@ -22,7 +22,7 @@ gdal.UseExceptions()
 class Predictor:
     def __init__(self, model, input_dem_dir, output_dir, threshold=0.3,
                  output_prob_map=True, output_class_map=True, output_depth_map=True,
-                 device=None):
+                 device="auto"):
 
         if not output_prob_map and not output_class_map and not output_depth_map:
             raise ValueError('At least one of "output_prob_map", "output_class_map" or "output_depth_map" must be True.')
@@ -35,7 +35,7 @@ class Predictor:
         self.threshold = threshold
 
         # Auto-select computation device
-        if device is None:
+        if device == "auto":
             device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.device = torch.device(device)
@@ -254,10 +254,11 @@ class Main:
         self.predictor = Predictor(model,
                                    self.args.input_dem_dir,
                                    self.args.output_dir,
-                                   self.args.threshold,
-                                   self.args.output_prob_map,
-                                   self.args.output_class_map,
-                                   self.args.output_depth_map)
+                                   threshold=self.args.threshold,
+                                   output_prob_map=self.args.output_prob_map,
+                                   output_class_map=self.args.output_class_map,
+                                   output_depth_map=self.args.output_depth_map,
+                                   device=self.args.device)
         self.run()
 
     @staticmethod
@@ -289,6 +290,11 @@ class Main:
                             dest="output_depth_map",
                             action="store_false",
                             help="Disable saving of the depth map output (enabled by default).")
+
+        parser.add_argument("--device",
+                            choices=["cpu", "cuda", "auto"],
+                            default="auto",
+                            help='Computation device: "cpu", "cuda", or "auto" (automatically detect GPU if available).')
 
         return parser.parse_args()
 

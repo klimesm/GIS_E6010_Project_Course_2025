@@ -3,6 +3,7 @@ import lightning as L
 from torch.utils.data import DataLoader
 from pytorch_lightning.loggers import CSVLogger
 from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
+import segmentation_models_pytorch as smp
 
 import os
 from pathlib import Path
@@ -15,11 +16,17 @@ from sklearn.model_selection import train_test_split
 from preprocessing import DitchDataset
 from model import DitchNet
 
+L.seed_everything(14, workers=True)
+
 
 class Train:
-    def __init__(self, feature_dir, label_dir, encoder_name="efficientnet-b4", batch_size=4, num_workers=None):
+    def __init__(self, feature_dir, label_dir,
+                 max_epochs, encoder_name="efficientnet-b4",
+                 pos_weight=3, batch_size=4, num_workers=None):
+
         # Initialize the segmentation model
-        self.model = DitchNet(encoder_name=encoder_name)
+        self.model = DitchNet(encoder_name=encoder_name, pos_weight=pos_weight)
+        self.max_epochs = max_epochs
 
         # Split dataset into training and validation sets
         self.X_train, self.X_val, self.y_train, self.y_val = self._construct_train_val_sets(feature_dir, label_dir)
@@ -44,7 +51,7 @@ class Train:
             raise ValueError("Feature and label directories must contain the same number of files.")
 
         # Split into training and validation sets (80/20)
-        return train_test_split(X, y, test_size=0.20)
+        return train_test_split(X, y, test_size=0.20, random_state=14)
 
     @staticmethod
     def _construct_transforms():
@@ -92,7 +99,7 @@ class Train:
 
     def run(self):
         # Configure the Lightning trainer and launch training
-        trainer = L.Trainer(max_epochs=150,
+        trainer = L.Trainer(max_epochs=self.max_epochs,
                             accelerator="auto",
                             devices="auto",
                             strategy="auto",
@@ -108,11 +115,13 @@ class Train:
 class Main:
     def __init__(self):
         self.args = self._parse_arguments()
-        self.trainer = Train(self.args.encoder_name,
-                             self.args.feature_dir,
+        self.trainer = Train(self.args.feature_dir,
                              self.args.label_dir,
-                             self.args.batch_size,
-                             self.args.num_workers)
+                             self.args.max_epochs,
+                             encoder_name=self.args.encoder_name,
+                             pos_weight=self.args.pos_weight,
+                             batch_size=self.args.batch_size,
+                             num_workers=self.args.num_workers)
 
         self.run()
 
@@ -123,9 +132,19 @@ class Main:
         parser.add_argument("feature_dir", help="Path to directory containing input feature images.")
         parser.add_argument("label_dir", help="Path to directory containing label (mask) images.")
 
-        parser.add_argument("--encoder_name", default="efficientnet-b4", help="Encoder backbone for DitchNet.")
-        parser.add_argument("--batch_size", type=int, default=4, help="Batch size for training.")
+        parser.add_argument("max_epochs", type=int, help="Maximum number of training epochs to run.")
 
+        parser.add_argument("--encoder_name",
+                            default="efficientnet-b4",
+                            choices=smp.encoders.get_encoder_names(),
+                            help="Encoder backbone for DitchNet. "
+                                 "Choices: https://smp.readthedocs.io/en/latest/encoders.html")
+
+        parser.add_argument("--pos_weight",
+                            type=int, default=3,
+                            help="Weighting factor for positive (ditch) class in the BCE loss to handle imbalance.")
+
+        parser.add_argument("--batch_size", type=int, default=4, help="Batch size for training.")
         parser.add_argument("--num_workers", type=int, default=None,
                             help="Number of parallel CPU workers used for loading batches from disk.")
 

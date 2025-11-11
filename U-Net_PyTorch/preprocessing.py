@@ -234,7 +234,9 @@ class Main:
         self.args = self._parse_arguments()
         self.chip_generator = ChipGenerator(self.args.input_dem_dir,
                                             self.args.label_vector_data,
-                                            self.args.output_dir)
+                                            self.args.output_dir,
+                                            mode=self.args.mode,
+                                            label_hpmf_threshold=self.args.label_hpmf_threshold)
         self.run()
 
     @staticmethod
@@ -247,7 +249,7 @@ class Main:
 
         parser.add_argument("output_dir", help="Directory where output feature and label chips will be written.")
 
-        parser.add_argument("--mode", default="train",
+        parser.add_argument("--mode", choices=["train", "test"], default="train",
                             help='Dataset generation mode: "train" for training data, "test" for test data.')
 
         parser.add_argument("--label_hpmf_threshold",
