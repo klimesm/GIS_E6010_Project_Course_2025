@@ -1,5 +1,4 @@
 import argparse
-
 from torch.utils.data import Dataset
 
 from pathlib import Path

@@ -1,5 +1,4 @@
 import argparse
-
 import lightning as L
 from torch.utils.data import DataLoader
 from pytorch_lightning.loggers import CSVLogger
