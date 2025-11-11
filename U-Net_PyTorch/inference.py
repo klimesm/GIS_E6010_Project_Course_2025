@@ -19,7 +19,7 @@ from osgeo import gdal
 gdal.UseExceptions()
 
 
-class DitchNetPredictor:
+class Predictor:
     def __init__(self, model, input_dem_dir, output_dir, threshold=0.3,
                  output_prob_map=True, output_class_map=True, output_depth_map=True,
                  device=None):
@@ -251,13 +251,13 @@ class Main:
     def __init__(self):
         self.args = self._parse_arguments()
         model = DitchNet.load_from_checkpoint(self.args.model_path)
-        self.predictor = DitchNetPredictor(model,
-                                           self.args.input_dem_dir,
-                                           self.args.output_dir,
-                                           self.args.threshold,
-                                           self.args.output_prob_map,
-                                           self.args.output_class_map,
-                                           self.args.output_depth_map)
+        self.predictor = Predictor(model,
+                                   self.args.input_dem_dir,
+                                   self.args.output_dir,
+                                   self.args.threshold,
+                                   self.args.output_prob_map,
+                                   self.args.output_class_map,
+                                   self.args.output_depth_map)
         self.run()
 
     @staticmethod
