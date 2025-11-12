@@ -4,12 +4,6 @@
 `preprocessing.py` handles all **data preprocessing and chip generation** steps required for training and testing the DitchNet segmentation model.  
 It converts large digital elevation model (DEM) rasters and vector ditch data into small, standardized feature–label pairs (chips) suitable for model input.
 
-The preprocessing pipeline:
-1. Generates feature layers (`HPMF` and `ISI`) from DEM tiles using WhiteboxTools.
-2. Creates corresponding binary ditch labels from vector geometries.
-3. Normalizes, resamples, and tiles data into `512×512` chips.
-4. Produces separate chip directories for training or testing.
-
 ---
 
 ## Class: `DitchDataset`
@@ -53,7 +47,7 @@ ChipGenerator(
 - Normalizes all layers and tiles them into `512×512` chips.
 - Removes temporary rasters after processing.
 
-### Internal Workflow
+### Methods
 
 #### `_set_directories()`
 Creates a standardized directory layout:
@@ -79,9 +73,6 @@ The input label vector data must share the same coordinate reference system (CRS
 If the coordinate systems differ or the vector layer does not overlap the DEM tile completely, the label generation and clipping process will fail.
 
 </div>
-
-
-
 
 #### `_generate_single_chip_pair(...)`
 - Extracts matching `feature_chip` and `label_chip` arrays.

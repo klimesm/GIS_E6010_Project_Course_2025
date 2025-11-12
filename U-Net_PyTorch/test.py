@@ -4,14 +4,13 @@ import lightning as L
 from torch.utils.data import DataLoader
 from pytorch_lightning.loggers import CSVLogger
 
-import os
 from pathlib import Path
 
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
+from preprocessing import DitchDataset
 from model import DitchNet
-from train import DitchDataset
 
 
 class Test:
