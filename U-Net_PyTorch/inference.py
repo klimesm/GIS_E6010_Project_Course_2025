@@ -209,7 +209,7 @@ class Predictor:
             gdal.BuildVRT(vrt_path, depth_raster_files)
 
     def predict(self):
-        print(f"Running DitchNet inference on DEM files in: {self.input_dem_dir}\n")
+        print(f"\nRunning DitchNet inference on DEM files in: {self.input_dem_dir}\n")
 
         dem_files = list(self.input_dem_dir.glob("*.tif"))
         if not dem_files:
@@ -239,7 +239,7 @@ class Predictor:
         if self.temp_dir.exists():
             shutil.rmtree(self.temp_dir)
 
-        print(f"All predictions completed.")
+        print(f"\nAll predictions completed.")
 
         # Report skipped files
         if self.invalid_inputs:

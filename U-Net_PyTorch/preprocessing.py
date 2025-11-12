@@ -162,7 +162,10 @@ class ChipGenerator:
         tiff.imwrite(feature_chip_file, feature_chip.astype(np.float32))
 
     def generate_chips(self):
-        print(f"Running DitchNet preprocessing on DEM files in: {self.input_dem_dir}\n")
+        print(f"\nRunning DitchNet preprocessing on DEM files in: {self.input_dem_dir}\n")
+
+        print(f"Mode: {self.mode}")
+        print(f"Label HPMF threshold: {self.label_hpmf_threshold}\n")
 
         dem_files = list(self.input_dem_dir.glob("*.tif"))
         if not dem_files:
@@ -221,7 +224,7 @@ class ChipGenerator:
         if self.temp_dir.exists():
             shutil.rmtree(self.temp_dir)
 
-        print(f"Preprocessing completed.")
+        print(f"\nPreprocessing completed.")
 
         # Report skipped files
         if self.invalid_inputs:
@@ -248,7 +251,8 @@ class Main:
         parser.add_argument("label_vector_data",
                             help="Vector dataset containing labeled ditch features (e.g., .shp, .gpkg).")
 
-        parser.add_argument("output_dir", help="Directory where output feature and label chips will be written.")
+        parser.add_argument("output_dir", help='Directory where output "training_data" directory including'
+                                               'feature and label chips will be written.')
 
         parser.add_argument("--mode", choices=["train", "test"], default="train",
                             help='Dataset generation mode: "train" for training data, "test" for test data.')

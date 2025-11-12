@@ -24,7 +24,7 @@ class Train:
     def __init__(self, feature_dir, label_dir, max_epochs,
                  encoder_name="efficientnet-b4",
                  pos_weight=3, batch_size=4,
-                 num_workers=None, compute_precision="32-true"):
+                 num_workers=0, compute_precision="32-true"):
 
         # Initialize the segmentation model
         self.model = DitchNet(encoder_name=encoder_name, pos_weight=pos_weight)
@@ -74,10 +74,6 @@ class Train:
         return train_transform, val_transform
 
     def _construct_dataloaders(self, batch_size, num_workers):
-        # Default worker count: half of available CPU cores
-        if num_workers is None:
-            num_workers = max(1, os.cpu_count() // 2)
-
         # Dataset and DataLoader construction
         training_dataset = DitchDataset(X=self.X_train, y=self.y_train, transform=self.train_transform)
         validation_dataset = DitchDataset(X=self.X_val, y=self.y_val, transform=self.val_transform)
@@ -85,12 +81,14 @@ class Train:
         training_dataloader = DataLoader(training_dataset,
                                          batch_size=batch_size,
                                          num_workers=num_workers,
+                                         persistent_workers=(num_workers > 0),
                                          shuffle=True,
                                          pin_memory=True)
 
         validation_dataloader = DataLoader(validation_dataset,
                                            batch_size=batch_size,
                                            num_workers=num_workers,
+                                           persistent_workers=(num_workers > 0),
                                            pin_memory=True)
 
         return training_dataloader, validation_dataloader
@@ -129,7 +127,6 @@ class Main:
                              batch_size=self.args.batch_size,
                              num_workers=self.args.num_workers,
                              compute_precision=self.args.compute_precision)
-
         self.run()
 
     @staticmethod
@@ -152,7 +149,7 @@ class Main:
                             help="Weighting factor for positive (ditch) class in the BCE loss to handle imbalance.")
 
         parser.add_argument("--batch_size", type=int, default=4, help="Batch size for training.")
-        parser.add_argument("--num_workers", type=int, default=None,
+        parser.add_argument("--num_workers", type=int, default=0,
                             help="Number of parallel CPU workers used for loading batches from disk.")
 
         parser.add_argument("--compute_precision",
