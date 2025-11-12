@@ -21,9 +21,10 @@ L.seed_everything(14, workers=True)
 
 
 class Train:
-    def __init__(self, feature_dir, label_dir,
-                 max_epochs, encoder_name="efficientnet-b4",
-                 pos_weight=3, batch_size=4, num_workers=None):
+    def __init__(self, feature_dir, label_dir, max_epochs,
+                 encoder_name="efficientnet-b4",
+                 pos_weight=3, batch_size=4,
+                 num_workers=None, compute_precision="32-true"):
 
         # Initialize the segmentation model
         self.model = DitchNet(encoder_name=encoder_name, pos_weight=pos_weight)
@@ -41,6 +42,10 @@ class Train:
         # Initialize logger and callbacks for model tracking and checkpointing
         self.logger = CSVLogger(save_dir=Path.cwd() / "lightning_logs", name="train_logs")
         self.callbacks = self._set_callbacks()
+
+        # Defines the computation precision used by the Trainer
+        # (e.g., '16-mixed' for faster mixed precision or '32-true' for full precision)
+        self.compute_precision = compute_precision
 
     @staticmethod
     def _construct_train_val_sets(feature_dir, label_dir):
@@ -106,7 +111,7 @@ class Train:
                             strategy="auto",
                             callbacks=self.callbacks,
                             logger=self.logger,
-                            precision="16-mixed")
+                            precision=self.compute_precision)
 
         trainer.fit(self.model,
                     train_dataloaders=self.train_dataloader,
@@ -122,7 +127,8 @@ class Main:
                              encoder_name=self.args.encoder_name,
                              pos_weight=self.args.pos_weight,
                              batch_size=self.args.batch_size,
-                             num_workers=self.args.num_workers)
+                             num_workers=self.args.num_workers,
+                             compute_precision=self.args.compute_precision)
 
         self.run()
 
@@ -148,6 +154,16 @@ class Main:
         parser.add_argument("--batch_size", type=int, default=4, help="Batch size for training.")
         parser.add_argument("--num_workers", type=int, default=None,
                             help="Number of parallel CPU workers used for loading batches from disk.")
+
+        parser.add_argument("--compute_precision",
+                            choices=["16-true", "16-mixed",
+                                     "bf16-true", "bf16-mixed",
+                                     "32-true", "64-true",
+                                     "64", "32", "16", "bf16"],
+
+                            default="32-true",
+                            help="Computation precision for training. More information: "
+                                 "https://lightning.ai/docs/pytorch/stable/common/precision_basic.html")
 
         return parser.parse_args()
 

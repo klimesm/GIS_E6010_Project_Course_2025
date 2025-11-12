@@ -82,10 +82,10 @@ class DitchNet(L.LightningModule):
         return self._shared_step(batch, "train")
 
     def validation_step(self, batch, batch_idx):
-        return self._shared_step(batch, "val")
+        self._shared_step(batch, "val")
 
     def test_step(self, batch, batch_idx):
-        return self._shared_step(batch, "test")
+        self._shared_step(batch, "test")
 
     def configure_optimizers(self):
         # AdamW optimizer with mild weight decay for stability

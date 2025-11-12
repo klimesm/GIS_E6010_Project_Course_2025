@@ -82,8 +82,8 @@ class ChipGenerator:
             self.data_dir = self.output_dir / "test_data"
 
         # Create standard folder structure for generated chips
-        self.feature_chip_dir = self.data_dir / "model_input_data" / "feature_chips"
-        self.label_chip_dir = self.data_dir / "model_input_data" / "label_chips"
+        self.feature_chip_dir = self.data_dir / "feature_chips"
+        self.label_chip_dir = self.data_dir / "label_chips"
         self.temp_dir = self.data_dir / "temp"
 
         for directory in [self.data_dir, self.temp_dir, self.feature_chip_dir, self.label_chip_dir]:
@@ -221,7 +221,7 @@ class ChipGenerator:
         if self.temp_dir.exists():
             shutil.rmtree(self.temp_dir)
 
-        print(f"All predictions completed.")
+        print(f"Preprocessing completed.")
 
         # Report skipped files
         if self.invalid_inputs:
