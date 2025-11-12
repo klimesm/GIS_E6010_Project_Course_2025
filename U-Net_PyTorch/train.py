@@ -6,7 +6,6 @@ from pytorch_lightning.loggers import CSVLogger
 from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 import segmentation_models_pytorch as smp
 
-import os
 from pathlib import Path
 
 import albumentations as A

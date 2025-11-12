@@ -132,7 +132,8 @@ class ChipGenerator:
         # Apply majority filter to clean noise and smooth labels
         wbt.majority_filter(i=self.label_temp, output=self.label_temp, filterx=3, filtery=3)
 
-        # Resample label raster to 2048×2048 using nearest-neighbor interpolation (order=0) to preserve class values
+        # Resample label raster to align with model resolution by
+        # using nearest-neighbor interpolation (order=0) to preserve class values
         label_array = tiff.imread(self.label_temp)
         label_array = resize(label_array, (resampled_height, resampled_width),
                              order=0, preserve_range=True, anti_aliasing=False)
