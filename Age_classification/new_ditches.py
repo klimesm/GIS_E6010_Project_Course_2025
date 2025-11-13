@@ -155,3 +155,15 @@ def find_new_ditches(new_layer_path, old_layer_path, output_dir,
     iface.addVectorLayer(filtered_path, "New Ditches", "ogr")
     print("\nProcess completed successfully!")
     print(f" Results in: {output_dir}")
+
+
+""" Example how to use:
+find_new_ditches(
+    new_layer_path: str,
+    old_layer_path: str,
+    output_dir: str,
+    threshold: float = 0.5,  #threshold for probability map's ditch pixels
+    tolerance_pixels: int = 2,
+    buffer_distance: int = 3 #buffer (m) for ditches
+)
+"""
