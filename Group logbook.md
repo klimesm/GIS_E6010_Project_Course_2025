@@ -186,8 +186,53 @@ Present: Nette, Emma, Janna, Matej
 - Proposal: schedule another meeting in about three weeks (29.10?)
 
 ## Wednesday 8.10 second client meeting 
-Online meeting 14-14:30
-*Janna will complete
+Online meeting (14-14:30)
+
+Present: All
+
+- Both groups prestened what they have done so far
+
+Random Forest
+
+- Nette presented the Random Forest workflow and also led the meeting
+  - The approach was tested with a small study area (1 km^) where 25% was for testing and 75% for training
+  - The workflow is mainly based on study https://www.sciencedirect.com/science/article/pii/S0957417422003876
+    
+- Emma presented the results 
+  - The model achieved moderate performance in ditch detection
+  - The major challenge is still that the model detects a notable number of false positives (68%)
+  - Results suggest that further feature refinement and training data improvments are needed for higher accuracy
+  - In addition, more training data and test data is needed
+ 
+- Next steps in Random Forest
+  - Apply post processing to refine predictions
+  - Train and test tehe model using larger study area.
+  - Considering the age and condition of ditches
+
+U-net
+
+- Ville presented the U-Net approach
+  -  The workflow is mainly based on study https://doi.org/10.1080/20964471.2025.2491177
+ 
+- Next steps in U-net
+  - Test pre-trained model​
+  - Fine tune pre-trained model​
+  - Train model from scratch​
+  - Compare/Evaluate
+
+Plugin development 
+
+-  Matej presented the uppcoming steps in plugin development
+  - Which type of data the client would like as input for the plugin
+  - LiDAR (.laz) or Digital Elevation Model (DEM)
+
+
+Some extra notes:
+- Next meeting on friday 17.10 (online)
+- We are waiting to get access to the CSC supercomputer so we can test the models with a larger dataset.
+- The client was satisfied with our results, and the purpose of this meeting was mainly to present our current progress.
+
+
 
 ## Friday 17.10
 Online meeting (9:15-9:45)
