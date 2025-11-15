@@ -17,10 +17,10 @@ providing feature and label tensors to the model during training, validation, or
 
 ### Behavior
 Each sample pair is:
-1. Loaded as a NumPy array (features as `float32`, labels as `uint8`).
-2. Channels of feature image are rearranged from `[C, H, W] → [H, W, C]`.
-3. The transform is applied consistently to both image and label.
-4. The label is binarized (`0`/`1`), cast to `float32`, and reshaped to `[1, H, W]`.
+- Loaded as a NumPy array (features as `float32`, labels as `uint8`).
+- Channels of feature image are rearranged from `[C, H, W] → [H, W, C]`.
+- The transform is applied consistently to both image and label.
+- The label is binarized (`0`/`1`), cast to `float32`, and reshaped to `[1, H, W]`.
 
 This ensures compatibility with the segmentation model’s input shape.
 
@@ -50,14 +50,11 @@ ChipGenerator(
 ### Methods
 
 #### `_set_directories()`
-Creates a standardized directory layout:
-```
-output_dir/
-└── training_data/ or test_data/
-    ├── feature_chips/
-    ├── label_chips/
-    └── temp/
-```
+Creates a standardized directory layout under the output folder, containing:
+- `training_data/` or `test_data/` — main output directory depending on mode
+- `feature_chips/` — extracted and normalized feature rasters
+- `label_chips/` — generated label rasters
+- `temp/` — intermediate files (removed automatically after processing)
 
 #### `_create_label_layer(dem_path, hpmf_array, resampled_height, resampled_width)`
 - Reads the corresponding DEM’s spatial metadata.
@@ -81,12 +78,12 @@ If the coordinate systems differ or the vector layer does not overlap the DEM ti
 
 #### `generate_chips()`
 The main method controlling the full preprocessing pipeline:
-1. Iterates through all DEM files in the input directory.
-2. Generates temporary HPMF, ISI, and label rasters.
-3. Combines them into normalized two-channel feature arrays.
-4. Iteratively tiles the data into `512×512` chips.
-5. Removes all temporary files after completion.
-6. Logs and reports skipped or invalid DEM inputs.
+- Iterates through all DEM files in the input directory.
+- Generates temporary HPMF, ISI, and label rasters.
+- Combines them into normalized two-channel feature arrays.
+- Iteratively tiles the data into `512×512` chips.
+- Removes all temporary files after completion.
+- Reports skipped or invalid DEM inputs.
 
 ---
 
@@ -94,13 +91,14 @@ The main method controlling the full preprocessing pipeline:
 A small command-line interface (CLI) wrapper allowing direct execution of preprocessing from the terminal.
 
 ### Arguments
-| Argument | Type | Description                                                                            |
-|-----------|------|----------------------------------------------------------------------------------------|
-| `input_dem_dir` | Path | Directory containing DEM `.tif` files to process.                                      |
-| `label_vector_data` | Path | Vector dataset (e.g. `.shp`, `.gpkg`) containing ditch features.                       |
-| `output_dir` | Path | Output directory for generated chips.                                                  |
-| `--mode` | str | `"train"` or `"test"` — determines subdirectory naming. Default: `"train"`                      |
-| `--label_hpmf_threshold` | float | Threshold for ditch pixel selection in HPMF layer (`≤ value` kept). Default: `-0.075`. |
+| Argument                 | Type  | Default   | Description                                                         |
+|--------------------------|--------|-----------|---------------------------------------------------------------------|
+| `input_dem_dir`          | Path   | —         | Directory containing the DEM tiles `(.tif)` to be processed.        |
+| `label_vector_data`      | Path   | —         | Vector dataset (e.g., `.shp`, `.gpkg`) containing ditch features.   |
+| `output_dir`             | Path   | —         | Output directory for generated chips.                               |
+| `--mode`                 | str    | `train`   | Determines subdirectory naming (`"train"` or `"test"`).             |
+| `--label_hpmf_threshold` | float  | `-0.075`  | Threshold for ditch pixel selection in the HPMF layer (`≤ value`).  |
+
 
 ---
 
@@ -119,6 +117,9 @@ output_dir/
     │   ├── 1.tif
     │   └── ...
     └── temp/ (removed automatically after processing)
+        ├── hpmf_temp.tif
+        ├── isi_temp.tif
+        └── label_temp.tif
 ```
 
 Each feature chip is a 2-channel raster (HPMF + ISI) normalized to `[0, 1]`,  
@@ -128,7 +129,7 @@ and each label chip is a binary raster (`1` = ditch, `0` = background).
 
 ## Example Usage
 ```bash
-python preprocessing.py   ./input_DEMs   ./ditch_vectors/ditches.gpkg   ./dataset_output   --mode train   --label_hpmf_threshold -0.05
+python preprocessing.py   ./input_DEMs   ./ditch_vectors/ditches.gpkg   ./dataset_output   --label_hpmf_threshold -0.05
 ```
 
 Both **relative** and **absolute** paths are supported for all input and output arguments.  
@@ -144,16 +145,17 @@ Label HPMF threshold: -0.05
 Processing: dem_tile_001.tif
 Processing: dem_tile_002.tif
 ...
+
 Preprocessing completed.
 ```
 
 ---
 
-## Dependencies and Integration
-- **WhiteboxTools**: used for hydrologic and terrain analysis (`high_pass_median_filter`, `impoundment_size_index`, `majority_filter`).
-- **Rasterio**, **GeoPandas**, **Shapely**: handle raster and vector geospatial data.
-- **tifffile**, **scikit-image**: for reading, writing, and resizing TIFF images.
+## Dependencies
 - **Albumentations**: for image augmentation and preprocessing in `DitchDataset`.
+- **Rasterio**, **GeoPandas**, **Shapely**: handle raster and vector geospatial data.
+- **scikit-image**, **tifffile**: for reading, writing, and resizing TIFF images.
 - **utils.py**: provides helper functions for normalization and layer creation.
+- **WhiteboxTools**: provides the `majority_filter` operation used for smoothing the label raster.
 
 The output dataset integrates directly with `train.py` and `test.py` for model development.

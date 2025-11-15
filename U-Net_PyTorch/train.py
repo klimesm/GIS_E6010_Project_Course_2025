@@ -96,7 +96,7 @@ class Train:
     def _set_callbacks():
         # Save top-performing checkpoints and enable early stopping
         checkpoint = ModelCheckpoint(save_weights_only=True, save_top_k=10, monitor="val_mcc", mode="max")
-        early_stop = EarlyStopping(patience=15, monitor="val_loss", mode="min")
+        early_stop = EarlyStopping(patience=20, monitor="val_loss", mode="min")
 
         return [checkpoint, early_stop]
 

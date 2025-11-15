@@ -34,16 +34,13 @@ Predictor(
 ### Methods
 
 #### `_set_output_directories()` and `_set_temporary_directories()`:
-Creates a standardized directory layout for inference results,
-generating only the subdirectories that correspond to the output types selected by the user:
+Creates a standardized directory layout for inference results. 
+Only the subdirectories corresponding to the enabled output types are created:
 
-```
-output_dir/
-    ├── probability_maps/
-    ├── classified_maps/
-    ├── depth_maps/
-    └── temp/ (removed automatically after processing)
-```
+- `probability_maps/` — continuous probability rasters
+- `classified_maps/` — binary classification rasters
+- `depth_maps/` — HPMF-based depth rasters
+- `temp/` — intermediate files (removed automatically after processing)
 
 #### `_create_output_layer()`
 Generates a full-size prediction raster by running model inference on the resampled feature data in 512×512 tiles.
@@ -114,6 +111,32 @@ The method:
 - Cleans up the temporary working directory.
 - Prints a final summary listing processed, skipped, and failed files.
 
+### Output
+
+After running inference, the script produces the following directory structure inside the specified output folder:
+
+```
+output_dir/
+├── probability_maps/        (if enabled)
+│   ├── dem_tile_001_ditch_probability.tif
+│   ├── dem_tile_002_ditch_probability.tif
+│   └── ...
+│
+├── classified_maps/         (if enabled)
+│   ├── dem_tile_001_ditch_classified.tif
+│   ├── dem_tile_002_ditch_classified.tif
+│   └── ...
+│
+├── depth_maps/              (if enabled)
+│   ├── dem_tile_001_ditch_depth.tif
+│   ├── dem_tile_002_ditch_depth.tif
+│   └── ...
+│
+└── temp/                    (removed automatically after processing)
+    ├── hpmf_temp.tif
+    └── isi_temp.tif
+```
+
 ---
 
 ## Class: `Main`
@@ -131,21 +154,6 @@ Provides a **command-line interface (CLI)** for running model inference directly
 | `--no_depth_map` | flag                          | enabled | Disables saving of the depth map output.                                              |
 | `--device`       | str (`cpu` / `cuda` / `auto`) | `auto`  | Specifies the computation device. `"auto"` selects GPU when available, otherwise CPU. |
 
-
----
-
-## Output
-Creates a standardized directory layout under the specified output folder.
-Within the main `output_dir/`, the script organizes inference results into dedicated subfolders:
-
-- `probability_maps/` – stores continuous probability raster outputs.
-
-- `classified_maps/` – contains binary classification rasters showing predicted ditch areas.
-
-- `depth_maps/` – holds depth estimation rasters derived from the HPMF layer.
-
-The script creates only the folders for the output types the user has enabled.
-
 ---
 
 ## Example Usage
@@ -153,19 +161,37 @@ The script creates only the folders for the output types the user has enabled.
 python inference.py   ./lightning_logs/train_logs/version_0/checkpoints/epoch=005-step=50.ckpt   ./input_DEMs   ./inference_output --threshold 0.1
 ```
 
-Both **relative** and **absolute** paths are supported for all input and output arguments.
+Both **relative** and **absolute** paths are supported for all input and output arguments.  
 This means you can run the program from any working directory without adjusting its internal path handling.
+
+### Example Output (Console)
+```
+Using device: cuda
+
+Probability map output: enabled
+Classified map output: enabled (threshold: 0.3)
+Depth map output: enabled
+
+Running DitchNet inference on DEM files in: ./input_DEMs
+
+Processing: dem_tile_001.tif
+Processing: dem_tile_002.tif
+Processing: dem_tile_003.tif
+...
+
+All predictions completed.
+```
 
 ---
 
 ## Dependencies
+- **GDAL**: builds VRT mosaics that merge tile-based outputs into seamless virtual rasters.
+- **model.py**: defines the DitchNet architecture and enables loading the trained model checkpoint.
+- **NumPy**: supports array manipulation for feature stacking, masking, and output raster creation.
 - **PyTorch**: runs the trained DitchNet model and handles tensor operations on CPU or GPU.
 - **Rasterio**: used for reading input DEMs, writing GeoTIFF outputs, and managing spatial metadata.
-- **NumPy**: supports array manipulation for feature stacking, masking, and output raster creation.
 - **scikit-image**: provides the resize function used for resampling the prediction layer.
-- **GDAL**: builds VRT mosaics that merge tile-based outputs into seamless virtual rasters.
 - **utils.py**: generates terrain feature layers (HPMF and ISI) and performs normalization required for inference.
-- **model.py**: defines the DitchNet architecture and enables loading the trained model checkpoint.
 
 The inference results serve as the final product of the DitchNet workflow and can be directly visualized 
 or used for GIS-based ditch mapping and analysis.

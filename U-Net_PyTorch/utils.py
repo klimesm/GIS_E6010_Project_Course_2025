@@ -1,6 +1,7 @@
 import numpy as np
 
 from sklearn.preprocessing import MinMaxScaler
+
 import tifffile as tiff
 from skimage.transform import resize
 

@@ -35,3 +35,10 @@ Combines the HPMF and ISI rasters into a **2‑channel feature tensor** for mode
 - Stacks the two layers into shape **[2, H, W]**.
 - Resizes both channels to the target resolution.
 - Returns a resized two‑channel float32 NumPy array ready for inference.
+
+
+## Dependencies
+- **NumPy**: array manipulation, masking, stacking, and numerical operations.
+- **scikit-image**, **tifffile**: for reading and resizing TIFF images.
+- **scikit-learn**: for performing min–max normalization on valid raster pixels.
+- **WhiteboxTools**: computes the HPMF and ISI terrain analysis layers used as model inputs.

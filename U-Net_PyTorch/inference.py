@@ -40,7 +40,7 @@ class Predictor:
             device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.device = torch.device(device)
-        print(f"\nUsing device: {self.device}")
+        print(f"\nUsing device: {self.device}\n")
 
         # Load model for inference
         self.model = model.to(self.device)
@@ -63,14 +63,17 @@ class Predictor:
     def _set_output_directories(self):
         # Create subdirectories only for the enabled output types
         if self.create_prob_map:
+            print("Probability map output: enabled")
             self.output_probability_dir = self.output_dir / "probability_maps"
             self.output_probability_dir.mkdir(parents=True, exist_ok=True)
 
         if self.create_class_map:
+            print(f"Classified map output: enabled (threshold: f{self.threshold})")
             self.output_classified_dir = self.output_dir / "classified_maps"
             self.output_classified_dir.mkdir(parents=True, exist_ok=True)
 
         if self.create_depth_map:
+            print("Depth map output: enabled")
             self.output_depth_dir = self.output_dir / "depth_maps"
             self.output_depth_dir.mkdir(parents=True, exist_ok=True)
 

@@ -39,13 +39,12 @@ Test(
 
 #### `_construct_dataloader(batch_size, num_workers)`
 - Loads the feature and label chip pairs into a PyTorch `DataLoader`.  
-- Maintains deterministic order and disables augmentations.  
 - Supports pinned memory and parallel workers for faster loading.
 
 #### `run()`
 - Builds a PyTorch Lightning `Trainer` with automatic device selection (CPU/GPU). 
-- Runs evaluation. 
-- Logs metrics to CSV via `CSVLogger` in `lightning_logs/test_logs`.  
+- Launches evaluation with: 
+  - Logging to CSV via `CSVLogger` under `lightning_logs/test_logs`  
 - Prints final metrics (loss, MCC, etc.) to console.
 
 ---
@@ -54,14 +53,15 @@ Test(
 Provides a **command-line interface (CLI)** for running model evaluation directly from the terminal.
 
 ### Arguments
-| Argument | Type | Description |
-|-----------|------|-------------|
-| `feature_dir` | Path | Directory containing test feature chips. |
-| `label_dir` | Path | Directory containing test label chips. |
-| `checkpoint_path` | Path | Path to trained model checkpoint (.ckpt) produced by `train.py`. |
-| `--batch_size` | int | Batch size for evaluation. Default: `4`. |
-| `--num_workers` | int | Number of CPU workers for data loading. Default: `0`. |
-| `--compute_precision` | str | Computation precision (`16-mixed`, `32-true`, etc.). Default: `"32-true"`. |
+| Argument            | Type | Default      | Description |
+|---------------------|------|--------------|-------------|
+| `feature_dir`       | Path | –            | Directory containing test feature chips. |
+| `label_dir`         | Path | –            | Directory containing test label chips. |
+| `checkpoint_path`   | Path | –            | Path to trained model checkpoint (`.ckpt`) produced by `train.py`. |
+| `--batch_size`      | int  | `4`          | Batch size for evaluation. |
+| `--num_workers`     | int  | `0`          | Number of CPU workers for data loading. |
+| `--compute_precision` | str | `"32-true"` | Computation precision (`16-mixed`, `32-true`, etc.). |
+
 
 ---
 
@@ -77,8 +77,7 @@ script_root\
     └── test_logs\
         └── version_0\
             ├── metrics.csv
-            ├── hparams.yaml
-
+            └── hparams.yaml
 ```
 
 ---
@@ -88,14 +87,14 @@ script_root\
 python test.py   ./dataset_output/test_data/feature_chips   ./dataset_output/test_data/label_chips   ./lightning_logs/train_logs/version_0/checkpoints/epoch=005-val_mcc=0.74.ckpt   --batch_size 4   --compute_precision 16-mixed
 ```
 
-Both **relative** and **absolute** paths are supported for all arguments.  
+Both **relative** and **absolute** paths are supported for all inputs.  
 The script evaluates the model using the given checkpoint and logs results automatically.
 
 ---
 
 ## Dependencies
-- **PyTorch Lightning**: provides the structured evaluation workflow and logging.  
 - **Albumentations**: ensures consistent preprocessing during testing.  
-- **Segmentation Models PyTorch (smp)**: defines the model architecture and encoder.  
-- **preprocessing.py**: provides `DitchDataset`, which handles feature–label loading.
-- **model.py**: defines the DitchNet architecture used for evaluation.
+- **model.py**: defines the DitchNet architecture used for evaluation.  
+- **preprocessing.py**: provides `DitchDataset`, which handles feature–label loading.  
+- **PyTorch Lightning**: provides the structured evaluation workflow and logging.  
+- **Segmentation Models PyTorch (smp)**: defines the model architecture and encoder.

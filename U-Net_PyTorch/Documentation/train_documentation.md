@@ -49,11 +49,11 @@ Train(
 
 #### `_construct_dataloaders(batch_size, num_workers)`
 - Wraps both datasets (`training` and `validation`) into `DataLoader` objects.  
-- Enables shuffling for training data, memory pinning, and persistent workers for parallel loading.
+- Enables shuffling for training data, memory pinning, and parallel workers for faster loading.
 
 #### `_set_callbacks()`
 - Creates a **ModelCheckpoint** callback to save the 10 best models based on validation MCC score (`val_mcc`).  
-- Adds **EarlyStopping** to stop the training if the validation loss does not improve for 15 epochs.
+- Adds **EarlyStopping** to stop the training if the validation loss does not improve for 20 epochs.
 
 #### `run()`
 - Builds a PyTorch Lightning `Trainer` with automatic device selection (CPU/GPU).  
@@ -69,16 +69,17 @@ Train(
 Provides a **command-line interface (CLI)** for running training directly from the terminal.
 
 ### Arguments
-| Argument | Type | Description                                                                            |
-|-----------|------|----------------------------------------------------------------------------------------|
-| `feature_dir` | Path | Directory containing input feature chips.                                              |
-| `label_dir` | Path | Directory containing label (mask) chips.                                               |
-| `max_epochs` | int | Maximum number of training epochs.                                                     |
-| `--encoder_name` | str | Encoder backbone for DitchNet. Default: `efficientnet-b4`.                  |
-| `--pos_weight` | int | Weight for the positive (ditch) class to handle class imbalance. Default: `3`.         |
-| `--batch_size` | int | Batch size for training. Default: `4`.                                                 |
-| `--num_workers` | int | Number of parallel CPU workers for data loading. Default: `0`.                         |
-| `--compute_precision` | str | Computation precision for training (`16-mixed`, `32-true`, etc.). Default: `"32-true"`. |
+| Argument            | Type | Default        | Description |
+|---------------------|------|----------------|-------------|
+| `feature_dir`       | Path | –              | Directory containing input feature chips. |
+| `label_dir`         | Path | –              | Directory containing label (mask) chips. |
+| `max_epochs`        | int  | –              | Maximum number of training epochs. |
+| `--encoder_name`    | str  | `efficientnet-b4` | Encoder backbone for DitchNet. |
+| `--pos_weight`      | int  | `3`            | Weight for the positive (ditch) class to handle class imbalance. |
+| `--batch_size`      | int  | `4`            | Batch size for training. |
+| `--num_workers`     | int  | `0`            | Number of parallel CPU workers for data loading. |
+| `--compute_precision` | str | `"32-true"`    | Computation precision for training (`16-mixed`, `32-true`, etc.). |
+
 
 ---
 
@@ -100,7 +101,6 @@ script_root\
                 ├── epoch=0-step=10.ckpt
                 ├── epoch=1-step=20.ckpt
                 └── ...
-
 ```
 
 ---
@@ -115,11 +115,11 @@ Both **relative** and **absolute** paths are supported for all inputs.
 ---
 
 ## Dependencies
-- **PyTorch Lightning**: for structured training, validation, logging, and checkpointing.  
-- **Albumentations**: for data augmentation and preprocessing.  
-- **Segmentation Models PyTorch (smp)**: defines the model architecture and encoder. 
-- **scikit-learn**: used for dataset splitting (`train_test_split`).  
-- **preprocessing.py**: provides `DitchDataset`, which handles feature–label loading.  
-- **model.py**: defines the DitchNet architecture used for training.  
+- **Albumentations**: for data augmentation and preprocessing.
+- **model.py**: defines the DitchNet architecture used for training.
+- **preprocessing.py**: provides `DitchDataset`, which handles feature–label loading.
+- **PyTorch Lightning**: for structured training, validation, logging, and checkpointing.
+- **scikit-learn**: used for dataset splitting (`train_test_split`).
+- **Segmentation Models PyTorch (smp)**: defines the model architecture and encoder.
 
 The trained model checkpoints are later used by **`test.py`** and **`inference.py`** for evaluation and prediction.
