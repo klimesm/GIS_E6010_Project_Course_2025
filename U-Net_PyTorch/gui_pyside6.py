@@ -1,11 +1,13 @@
 import sys
 import os
+import glob
+import shutil
 import subprocess
 from PySide6.QtWidgets import (
     QApplication, QWidget, QPushButton, QLabel, QFileDialog, QLineEdit,
     QVBoxLayout, QHBoxLayout, QCheckBox, QTextEdit, QDoubleSpinBox
 )
-from PySide6.QtCore import QThread, Signal
+from PySide6.QtCore import QThread, Signal, QSettings
 
 
 class BackendWorker(QThread):
@@ -74,69 +76,110 @@ class GUI(QWidget):
 
         self.setWindowTitle("DitchNet – GUI")
         self.setFixedWidth(600)
-
+        self.settings = QSettings("DitchNet", "GUI")
         layout = QVBoxLayout()
 
         # path to python in conda env (backend env)
         layout.addWidget(QLabel("Backend python interpreter (conda env):"))
-        self.python_exec = QLineEdit()
-        layout.addWidget(self.python_exec)
-        btn = QPushButton("Browse python interpreter (python.exe)")
-        btn.clicked.connect(self.select_python)
-        layout.addWidget(btn)
+        row = QHBoxLayout()
+        # self.python_exec = QLineEdit()
+        # self.python_exec.setText(self.settings.value("python_exec", ""))
+        # btn = QPushButton("Browse")
+        # btn.clicked.connect(self.select_python)
+        # btn2 = QPushButton("Find Conda Python")
+        # btn2.clicked.connect(self.find_conda_python)
+        # row.addWidget(self.python_exec)
+        # row.addWidget(btn)
+        # row.addWidget(btn2)
+        # layout.addLayout(row)
+        # QComboBox místo QLineEdit
+        from PySide6.QtWidgets import QComboBox
+        self.python_exec = QComboBox()
+        self.python_exec.setEditable(True)
+        self.python_exec.setMinimumWidth(350)
+        row.addWidget(self.python_exec)
+        row.addStretch()
+
+        # Fill from conda envs
+        for exe in self.find_conda_pythons():
+            self.python_exec.addItem(exe)
+        # Load saved value
+        saved = self.settings.value("python_exec", "")
+        if saved:
+            self.python_exec.setCurrentText(saved)
+
+        # Browse button
+        browse_btn = QPushButton("Browse")
+        browse_btn.clicked.connect(self.select_python)
+        row.addWidget(browse_btn)
+
+        layout.addLayout(row)
 
         # backend script path
         layout.addWidget(QLabel("Backend script (inference.py):"))
+        row = QHBoxLayout()
         self.backend_script = QLineEdit()
-        layout.addWidget(self.backend_script)
-        btn = QPushButton("Browse script")
+        self.backend_script.setText(self.settings.value("backend_script", ""))
+        btn = QPushButton("Browse")
         btn.clicked.connect(self.select_script)
-        layout.addWidget(btn)
+        row.addWidget(self.backend_script)
+        row.addWidget(btn)
+        layout.addLayout(row)
 
-        # model
-        layout.addWidget(QLabel("Model (.ckpt):"))
+        # model dir
+        layout.addWidget(QLabel("Model directory:"))
+        row = QHBoxLayout()
         self.model_path = QLineEdit()
-        layout.addWidget(self.model_path)
-        btn = QPushButton("Browse model")
+        self.model_path.setText(self.settings.value("model_path", ""))
+        btn = QPushButton("Browse")
         btn.clicked.connect(self.select_model)
-        layout.addWidget(btn)
+        row.addWidget(self.model_path)
+        row.addWidget(btn)
+        layout.addLayout(row)
 
         # input dir
         layout.addWidget(QLabel("Input DEM directory:"))
+        row = QHBoxLayout()
         self.dem_path = QLineEdit()
-        layout.addWidget(self.dem_path)
-        btn = QPushButton("Browse input directory")
+        self.dem_path.setText(self.settings.value("dem_path", ""))
+        btn = QPushButton("Browse")
         btn.clicked.connect(self.select_dem)
-        layout.addWidget(btn)
+        row.addWidget(self.dem_path)
+        row.addWidget(btn)
+        layout.addLayout(row)
 
         # output dir
         layout.addWidget(QLabel("Output directory:"))
+        row = QHBoxLayout()
         self.out_path = QLineEdit()
-        layout.addWidget(self.out_path)
-        btn = QPushButton("Browse output directory")
+        self.out_path.setText(self.settings.value("out_path", ""))
+        btn = QPushButton("Browse")
         btn.clicked.connect(self.select_output)
-        layout.addWidget(btn)
+        row.addWidget(self.out_path)
+        row.addWidget(btn)
+        layout.addLayout(row)
 
         # threshold
         box = QHBoxLayout()
         box.addWidget(QLabel("Threshold:"))
         self.threshold = QDoubleSpinBox()
         self.threshold.setRange(0.0, 1.0)
-        self.threshold.setValue(0.3)
+        self.threshold.setValue(float(self.settings.value("threshold", 0.3)))
+        self.threshold.setSingleStep(0.05)
         box.addWidget(self.threshold)
         layout.addLayout(box)
 
         # checkboxes
         self.cb_prob = QCheckBox("Generate probability map")
-        self.cb_prob.setChecked(True)
+        self.cb_prob.setChecked(self.settings.value("prob_map", "true") == "true")
         layout.addWidget(self.cb_prob)
 
-        self.cb_class = QCheckBox("Generate classified map")
-        self.cb_class.setChecked(True)
+        self.cb_class = QCheckBox("Generate binary map")
+        self.cb_class.setChecked(self.settings.value("class_map", "true") == "true")
         layout.addWidget(self.cb_class)
 
         self.cb_depth = QCheckBox("Generate depth map")
-        self.cb_depth.setChecked(True)
+        self.cb_depth.setChecked(self.settings.value("depth_map", "true") == "true")
         layout.addWidget(self.cb_depth)
 
         # run buttom
@@ -152,6 +195,28 @@ class GUI(QWidget):
 
         self.setLayout(layout)
 
+        # add tooltips and help
+        self.python_exec.setToolTip("Path to python.exe from the backend conda environment (containing necessary ML libraries).")
+        self.backend_script.setToolTip("Select inference.py or train (maybe we will addd)")
+        self.model_path.setToolTip("Folder containing one or more trained .ckpt model files.")
+        self.dem_path.setToolTip("Folder containing input DEM files.")
+        self.out_path.setToolTip("Folder where results will be saved.")
+        self.threshold.setToolTip("Probability threshold (0–1).")
+        self.cb_prob.setToolTip("Generate probability map.")
+        self.cb_class.setToolTip("Generate binary map.")
+        self.cb_depth.setToolTip("Generate depth map.")
+
+    def save(self):
+        self.settings.setValue("python_exec", self.python_exec.currentText())
+        self.settings.setValue("backend_script", self.backend_script.text())
+        self.settings.setValue("model_path", self.model_path.text())
+        self.settings.setValue("dem_path", self.dem_path.text())
+        self.settings.setValue("out_path", self.out_path.text())
+        self.settings.setValue("threshold", self.threshold.value())
+        self.settings.setValue("prob_map", "true" if self.cb_prob.isChecked() else "false")
+        self.settings.setValue("class_map", "true" if self.cb_class.isChecked() else "false")
+        self.settings.setValue("depth_map", "true" if self.cb_depth.isChecked() else "false")
+
     def log_write(self, text):
         self.log.append(text)
         self.log.ensureCursorVisible()
@@ -161,32 +226,38 @@ class GUI(QWidget):
         file, _ = QFileDialog.getOpenFileName(self, "Select python interpreter (python.exe)", "", "Python (python.exe)")
         if file:
             self.python_exec.setText(file)
+            self.save()
 
     def select_script(self):
         file, _ = QFileDialog.getOpenFileName(self, "Select backend script", "", "Python (*.py)")
         if file:
             self.backend_script.setText(file)
+            self.save()
 
     def select_model(self):
-        file, _ = QFileDialog.getOpenFileName(self, "Select model", "", "Checkpoint (*.ckpt)")
-        if file:
-            self.model_path.setText(file)
+        folder = QFileDialog.getExistingDirectory(self)
+        if folder:
+            self.model_path.setText(folder)
+            self.save()
 
     def select_dem(self):
         folder = QFileDialog.getExistingDirectory(self)
         if folder:
             self.dem_path.setText(folder)
+            self.save()
 
     def select_output(self):
         folder = QFileDialog.getExistingDirectory(self)
         if folder:
             self.out_path.setText(folder)
+            self.save()
 
     def run_prediction(self):
+        self.save()
         if not (
             os.path.isfile(self.python_exec.text()) and
             os.path.isfile(self.backend_script.text()) and
-            os.path.isfile(self.model_path.text()) and
+            os.path.isdir(self.model_path.text()) and
             os.path.isdir(self.dem_path.text()) and
             os.path.isdir(self.out_path.text())
         ):
@@ -211,6 +282,73 @@ class GUI(QWidget):
         self.worker.log_signal.connect(self.log_write)
         self.worker.done_signal.connect(lambda: self.run_btn.setEnabled(True))
         self.worker.start()
+
+    # def find_conda_pythons():
+    #     possible_env_paths = []
+    #
+    #     # 1) Standard Anaconda/Miniconda user paths
+    #     user = os.getenv("USERNAME") or ""
+    #     user_dirs = [
+    #         rf"C:\Users\{user}\anaconda3\envs",
+    #         rf"C:\Users\{user}\miniconda3\envs"
+    #     ]
+    #
+    #     # 2) ProgramData installs
+    #     programdata_dirs = [
+    #         r"C:\ProgramData\Anaconda3\envs",
+    #         r"C:\ProgramData\Miniconda3\envs"
+    #     ]
+    #
+    #     # 3) Your custom path
+    #     custom_dirs = [
+    #         r"C:\conda\envs"
+    #     ]
+    #
+    #     search_dirs = user_dirs + programdata_dirs + custom_dirs
+    #
+    #     python_paths = []
+    #
+    #     for root in search_dirs:
+    #         if not os.path.isdir(root):
+    #             continue
+    #
+    #         for env_name in os.listdir(root):
+    #             python_exe = os.path.join(root, env_name, "python.exe")
+    #             if os.path.isfile(python_exe):
+    #                 python_paths.append(python_exe)
+    #
+    #     return python_paths
+    def find_conda_pythons(self):
+        python_paths = []
+
+        user = os.getenv("USERNAME") or ""
+        user_dirs = [
+            rf"C:\Users\{user}\anaconda3\envs",
+            rf"C:\Users\{user}\miniconda3\envs"
+        ]
+
+        programdata_dirs = [
+            r"C:\ProgramData\Anaconda3\envs",
+            r"C:\ProgramData\Miniconda3\envs"
+        ]
+
+        custom_dirs = [
+            r"C:\conda\envs"
+        ]
+
+        search_dirs = user_dirs + programdata_dirs + custom_dirs
+
+        for root in search_dirs:
+            if not os.path.isdir(root):
+                continue
+
+            for env_name in os.listdir(root):
+                python_exe = os.path.join(root, env_name, "python.exe")
+                if os.path.isfile(python_exe):
+                    python_paths.append(python_exe)
+
+        # Remove duplicates while preserving order
+        return list(dict.fromkeys(python_paths))
 
 
 if __name__ == "__main__":
