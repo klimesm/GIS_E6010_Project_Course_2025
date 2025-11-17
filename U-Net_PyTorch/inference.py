@@ -22,11 +22,12 @@ gdal.UseExceptions()
 
 class Predictor:
     def __init__(self, model_dir, input_dem_dir, output_dir, threshold=0.3,
-                 output_prob_map=True, output_class_map=True, output_depth_map=True,
+                 output_prob_map=True, output_binary_map=True, output_depth_map=True,
                  device="auto"):
 
-        if not output_prob_map and not output_class_map and not output_depth_map:
-            raise ValueError('At least one of "output_prob_map", "output_class_map" or "output_depth_map" must be True.')
+        if not output_prob_map and not output_binary_map and not output_depth_map:
+            raise ValueError('At least one of "output_prob_map", "output_binary_map" or '
+                             '"output_depth_map" must be True.')
 
         # Define and prepare directories
         self.input_dem_dir = Path(input_dem_dir).resolve()
@@ -48,7 +49,7 @@ class Predictor:
 
         # Output mode flags
         self.create_prob_map = output_prob_map
-        self.create_binary_map = output_class_map
+        self.create_binary_map = output_binary_map
         self.create_depth_map = output_depth_map
 
         # Initialize output and temp directories
@@ -61,12 +62,14 @@ class Predictor:
         self.invalid_inputs = []
 
     def _init_models(self, model_dir):
+        # Resolve the path and ensure at least one .ckpt file exists
         model_dir = Path(model_dir).resolve()
         if not any(model_dir.glob("*.ckpt")):
-            raise ValueError()
+            raise ValueError(f"No model checkpoints (*.ckpt) found in directory: {model_dir}")
 
         print("The following models will be used and their predictions will be averaged:")
 
+        # Load each checkpoint, move model to the selected device, store it
         for ckpt_path in model_dir.glob("*.ckpt"):
             model = DitchNet.load_from_checkpoint(ckpt_path)
             self.models.append(model.to(self.device))
@@ -75,6 +78,7 @@ class Predictor:
 
         print("")
 
+        # Set all models to evaluation mode (disables training-specific layers and gradients)
         for model in self.models:
             model.eval()
 
@@ -123,16 +127,22 @@ class Predictor:
 
                 predictions = []
 
-                # Run model inference in evaluation mode (no gradient calculation)
+                # Run inference for all models with gradients disabled (faster, lower memory use)
                 with torch.no_grad():
                     for model in self.models:
+                        # Forward pass through the current model
                         predicted = model(feature_tensor)
+
+                        # Convert logits to probabilities and move result to CPU as NumPy array
                         predicted = torch.sigmoid(predicted).squeeze().cpu().numpy()
+
+                        # Store each model's prediction for later averaging
                         predictions.append(predicted)
 
+                # Average predictions from all models to produce the ensemble output
                 merged_prediction = np.mean(predictions, axis=0)
 
-                # Place prediction back into the output mosaic
+                # Place merged prediction back into the output mosaic
                 output_array[start_i:start_i + chip_size, start_j:start_j + chip_size] = merged_prediction
 
         # Resample back to the original DEM resolution
@@ -281,7 +291,7 @@ class Main:
                                    self.args.output_dir,
                                    threshold=self.args.threshold,
                                    output_prob_map=self.args.output_prob_map,
-                                   output_class_map=self.args.output_class_map,
+                                   output_binary_map=self.args.output_binary_map,
                                    output_depth_map=self.args.output_depth_map,
                                    device=self.args.device)
         self.run()
@@ -308,8 +318,8 @@ class Main:
                             action="store_false",
                             help="Disable saving of the probability map output (enabled by default).")
 
-        parser.add_argument("--no_class_map",
-                            dest="output_class_map",
+        parser.add_argument("--no_binary_map",
+                            dest="output_binary_map",
                             action="store_false",
                             help="Disable saving of the binary map output (enabled by default).")
 
