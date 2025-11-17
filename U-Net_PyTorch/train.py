@@ -96,7 +96,7 @@ class Train:
     def _set_callbacks():
         # Save top-performing checkpoints and enable early stopping
         checkpoint = ModelCheckpoint(save_weights_only=True, save_top_k=10, monitor="val_mcc", mode="max")
-        early_stop = EarlyStopping(patience=20, monitor="val_loss", mode="min")
+        early_stop = EarlyStopping(patience=50, monitor="val_loss", mode="min")
 
         return [checkpoint, early_stop]
 
@@ -144,7 +144,7 @@ class Main:
                                  "Choices: https://smp.readthedocs.io/en/latest/encoders.html")
 
         parser.add_argument("--pos_weight",
-                            type=int, default=3,
+                            type=float, default=3,
                             help="Weighting factor for positive (ditch) class in the BCE loss to handle imbalance.")
 
         parser.add_argument("--batch_size", type=int, default=4, help="Batch size for training.")

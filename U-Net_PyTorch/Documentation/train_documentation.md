@@ -69,16 +69,16 @@ Train(
 Provides a **command-line interface (CLI)** for running training directly from the terminal.
 
 ### Arguments
-| Argument            | Type | Default        | Description |
-|---------------------|------|----------------|-------------|
-| `feature_dir`       | Path | –              | Directory containing input feature chips. |
-| `label_dir`         | Path | –              | Directory containing label (mask) chips. |
-| `max_epochs`        | int  | –              | Maximum number of training epochs. |
-| `--encoder_name`    | str  | `efficientnet-b4` | Encoder backbone for DitchNet. |
-| `--pos_weight`      | int  | `3`            | Weight for the positive (ditch) class to handle class imbalance. |
-| `--batch_size`      | int  | `4`            | Batch size for training. |
-| `--num_workers`     | int  | `0`            | Number of parallel CPU workers for data loading. |
-| `--compute_precision` | str | `"32-true"`    | Computation precision for training (`16-mixed`, `32-true`, etc.). |
+| Argument            | Type  | Default        | Description |
+|---------------------|-------|----------------|-------------|
+| `feature_dir`       | Path  | –              | Directory containing input feature chips. |
+| `label_dir`         | Path  | –              | Directory containing label (mask) chips. |
+| `max_epochs`        | int   | –              | Maximum number of training epochs. |
+| `--encoder_name`    | str   | `efficientnet-b4` | Encoder backbone for DitchNet. |
+| `--pos_weight`      | float | `3`            | Weight for the positive (ditch) class to handle class imbalance. |
+| `--batch_size`      | int   | `4`            | Batch size for training. |
+| `--num_workers`     | int   | `0`            | Number of parallel CPU workers for data loading. |
+| `--compute_precision` | str   | `"32-true"`    | Computation precision for training (`16-mixed`, `32-true`, etc.). |
 
 
 ---

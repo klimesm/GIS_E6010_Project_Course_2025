@@ -96,7 +96,7 @@ class DitchNet(L.LightningModule):
                                       mode="min",
                                       factor=0.5,
                                       patience=5,
-                                      cooldown=2,
+                                      cooldown=5,
                                       min_lr=1e-7,
                                       threshold=1e-3,
                                       threshold_mode="rel")

@@ -21,7 +21,7 @@ gdal.UseExceptions()
 
 
 class Predictor:
-    def __init__(self, model, input_dem_dir, output_dir, threshold=0.3,
+    def __init__(self, model_dir, input_dem_dir, output_dir, threshold=0.3,
                  output_prob_map=True, output_class_map=True, output_depth_map=True,
                  device="auto"):
 
@@ -42,23 +42,41 @@ class Predictor:
         self.device = torch.device(device)
         print(f"\nUsing device: {self.device}\n")
 
-        # Load model for inference
-        self.model = model.to(self.device)
-        self.model.eval()
+        # Initialize selected model(s)
+        self.models = []
+        self._init_models(model_dir)
 
         # Output mode flags
         self.create_prob_map = output_prob_map
-        self.create_class_map = output_class_map
+        self.create_binary_map = output_class_map
         self.create_depth_map = output_depth_map
 
         # Initialize output and temp directories
-        self.output_probability_dir, self.output_classified_dir, self.output_depth_dir = None, None, None
+        self.output_probability_dir, self.output_binary_dir, self.output_depth_dir = None, None, None
         self._set_output_directories()
 
         self.temp_dir, self.hpmf_temp, self.isi_temp = None, None, None
         self._set_temporary_directories()
 
         self.invalid_inputs = []
+
+    def _init_models(self, model_dir):
+        model_dir = Path(model_dir).resolve()
+        if not any(model_dir.glob("*.ckpt")):
+            raise ValueError()
+
+        print("The following models will be used and their predictions will be averaged:")
+
+        for ckpt_path in model_dir.glob("*.ckpt"):
+            model = DitchNet.load_from_checkpoint(ckpt_path)
+            self.models.append(model.to(self.device))
+
+            print(ckpt_path.name)
+
+        print("")
+
+        for model in self.models:
+            model.eval()
 
     def _set_output_directories(self):
         # Create subdirectories only for the enabled output types
@@ -67,10 +85,10 @@ class Predictor:
             self.output_probability_dir = self.output_dir / "probability_maps"
             self.output_probability_dir.mkdir(parents=True, exist_ok=True)
 
-        if self.create_class_map:
-            print(f"Classified map output: enabled (threshold: f{self.threshold})")
-            self.output_classified_dir = self.output_dir / "classified_maps"
-            self.output_classified_dir.mkdir(parents=True, exist_ok=True)
+        if self.create_binary_map:
+            print(f"Binary map output: enabled (threshold: {self.threshold})")
+            self.output_binary_dir = self.output_dir / "binary_maps"
+            self.output_binary_dir.mkdir(parents=True, exist_ok=True)
 
         if self.create_depth_map:
             print("Depth map output: enabled")
@@ -103,15 +121,19 @@ class Predictor:
                 feature_chip = feature_chip[np.newaxis, :, :]
                 feature_tensor = torch.from_numpy(feature_chip).float().to(self.device)
 
+                predictions = []
+
                 # Run model inference in evaluation mode (no gradient calculation)
                 with torch.no_grad():
-                    predicted = self.model(feature_tensor)
+                    for model in self.models:
+                        predicted = model(feature_tensor)
+                        predicted = torch.sigmoid(predicted).squeeze().cpu().numpy()
+                        predictions.append(predicted)
 
-                    # Apply sigmoid activation, move tensor to CPU, and convert to NumPy array
-                    predicted = torch.sigmoid(predicted).squeeze().cpu().numpy()
+                merged_prediction = np.mean(predictions, axis=0)
 
                 # Place prediction back into the output mosaic
-                output_array[start_i:start_i + chip_size, start_j:start_j + chip_size] = predicted
+                output_array[start_i:start_i + chip_size, start_j:start_j + chip_size] = merged_prediction
 
         # Resample back to the original DEM resolution
         output_array = resize(output_array, (orig_height, orig_width), order=1, preserve_range=True, anti_aliasing=False)
@@ -125,13 +147,13 @@ class Predictor:
         with rasterio.open(output_file, "w", **profile) as dst:
             dst.write(output_array, 1)
 
-    def _output_classified_map(self, input_path, profile, output_array):
-        # Convert probabilities to binary classification using threshold
+    def _output_binary_map(self, input_path, profile, output_array):
+        # Convert probabilities to binary values using threshold
         filtered_output_array = (output_array >= self.threshold).astype(np.uint8)
 
-        # Save binary classified map
+        # Save binary map
         profile.update(dtype=rasterio.uint8, count=1, nodata=None)
-        output_file = self.output_classified_dir / f"{input_path.stem}_ditch_classified.tif"
+        output_file = self.output_binary_dir / f"{input_path.stem}_ditch_binary.tif"
         with rasterio.open(output_file, "w", **profile) as dst:
             dst.write(filtered_output_array, 1)
 
@@ -180,8 +202,8 @@ class Predictor:
         if self.create_prob_map:
             self._output_probability_map(dem_path, profile, output_array)
 
-        if self.create_class_map:
-            self._output_classified_map(dem_path, profile, output_array)
+        if self.create_binary_map:
+            self._output_binary_map(dem_path, profile, output_array)
 
         if self.create_depth_map:
             self._output_depth_map(dem_path, output_array)
@@ -199,10 +221,10 @@ class Predictor:
             vrt_path = self.output_probability_dir / "ditch_probability_map.vrt"
             gdal.BuildVRT(vrt_path, depth_raster_files)
 
-        if self.create_class_map:
-            depth_raster_files = [raster_name for raster_name in self.output_classified_dir.glob("*.tif")]
+        if self.create_binary_map:
+            depth_raster_files = [raster_name for raster_name in self.output_binary_dir.glob("*.tif")]
 
-            vrt_path = self.output_classified_dir / "ditch_classified_map.vrt"
+            vrt_path = self.output_binary_dir / "ditch_binary_map.vrt"
             gdal.BuildVRT(vrt_path, depth_raster_files)
 
         if self.create_depth_map:
@@ -220,8 +242,8 @@ class Predictor:
             if self.output_probability_dir.exists():
                 shutil.rmtree(self.output_probability_dir)
 
-            if self.output_classified_dir.exists():
-                shutil.rmtree(self.output_classified_dir)
+            if self.output_binary_dir.exists():
+                shutil.rmtree(self.output_binary_dir)
 
             if self.output_depth_dir.exists():
                 shutil.rmtree(self.output_depth_dir)
@@ -254,8 +276,7 @@ class Predictor:
 class Main:
     def __init__(self):
         self.args = self._parse_arguments()
-        model = DitchNet.load_from_checkpoint(self.args.model_path)
-        self.predictor = Predictor(model,
+        self.predictor = Predictor(self.args.model_dir,
                                    self.args.input_dem_dir,
                                    self.args.output_dir,
                                    threshold=self.args.threshold,
@@ -267,17 +288,19 @@ class Main:
 
     @staticmethod
     def _parse_arguments():
-        parser = argparse.ArgumentParser(description="Generate ditch probability and classification maps "
-                                                     "from DEM data using a trained DitchNet model.")
+        parser = argparse.ArgumentParser(description="Generate ditch probability, binary and depth maps "
+                                                     "from DEM data using a trained DitchNet models.")
 
-        parser.add_argument("model_path", help="Path to the trained DitchNet model (.ckpt file).")
+        parser.add_argument("model_dir", help="Directory containing one or more trained "
+                                              "DitchNet model checkpoints (*.ckpt).")
+
         parser.add_argument("input_dem_dir", help="Directory containing DEM files (.tif) to process.")
         parser.add_argument("output_dir", help="Directory where output maps will be saved.")
 
         parser.add_argument("--threshold",
                             type=float,
                             default=0.3,
-                            help="Classification threshold for the output map.")
+                            help="Binarization threshold for the output map.")
 
         # Optional flags to disable specific output types
         parser.add_argument("--no_prob_map",
@@ -288,7 +311,7 @@ class Main:
         parser.add_argument("--no_class_map",
                             dest="output_class_map",
                             action="store_false",
-                            help="Disable saving of the classified map output (enabled by default).")
+                            help="Disable saving of the binary map output (enabled by default).")
 
         parser.add_argument("--no_depth_map",
                             dest="output_depth_map",
