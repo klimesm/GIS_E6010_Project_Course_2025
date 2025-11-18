@@ -1,5 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 def find_new_ditches(new_layer_path, old_layer_path, output_dir,
                      threshold=0.5, tolerance_pixels=2, buffer_distance=3):
+
     import os
     import glob
     import rasterio
@@ -10,11 +14,7 @@ def find_new_ditches(new_layer_path, old_layer_path, output_dir,
     import geopandas as gpd
     from shapely.geometry import shape
     from scipy.ndimage import binary_dilation
-    from qgis.utils import iface  
 
-  
-    # SETTINGS
-   
     os.makedirs(output_dir, exist_ok=True)
 
     new_dir = os.path.dirname(new_layer_path)
@@ -23,7 +23,6 @@ def find_new_ditches(new_layer_path, old_layer_path, output_dir,
     output_vector = os.path.join(output_dir, "new_ditches_vectorized.gpkg")
 
     # STEP 1: Merge new raster tiles
-
     print("\n[1/8] Merging new raster tiles...")
     new_tif_files = glob.glob(os.path.join(new_dir, "*.tif"))
     if not new_tif_files:
@@ -43,9 +42,7 @@ def find_new_ditches(new_layer_path, old_layer_path, output_dir,
         dest.write(mosaic_new)
     print(f" New raster saved: {merged_new_path}")
 
-    
     # STEP 2: Merge old raster tiles
-  
     print("\n[2/8] Merging old raster tiles...")
     old_tif_files = glob.glob(os.path.join(old_dir, "*.tif"))
     if not old_tif_files:
@@ -65,9 +62,7 @@ def find_new_ditches(new_layer_path, old_layer_path, output_dir,
         dest.write(mosaic_old)
     print(f" Old raster saved: {merged_old_path}")
 
-    
     # STEP 3: Read merged rasters
-
     print("\n[3/8] Reading merged rasters...")
     with rasterio.open(merged_new_path) as new_src:
         new_data = new_src.read(1)
@@ -77,12 +72,10 @@ def find_new_ditches(new_layer_path, old_layer_path, output_dir,
 
     with rasterio.open(merged_old_path) as old_src:
         old_data = old_src.read(1)
-        old_crs = old_src.crs
         old_transform = old_src.transform
+        old_crs = old_src.crs
 
-
-    # STEP 4: Reproject old raster to match new
- 
+    # STEP 4: Reproject old raster
     print("\n[4/8] Reprojecting old raster to match new...")
     old_reproj = np.empty_like(new_data, dtype=np.float32)
     reproject(
@@ -96,9 +89,7 @@ def find_new_ditches(new_layer_path, old_layer_path, output_dir,
     )
     print(" Reprojection done.")
 
-   
-    # STEP 5: Identify new ditches (raster level)
-   
+    # STEP 5: Identify new ditches
     print("\n[5/8] Calculating differences...")
     new_bin = (new_data >= threshold).astype(np.uint8)
     old_bin = (old_reproj >= threshold).astype(np.uint8)
@@ -112,9 +103,7 @@ def find_new_ditches(new_layer_path, old_layer_path, output_dir,
         dst.write(new_only, 1)
     print(f" Difference raster saved: {new_only_raster}")
 
-    
-    # STEP 6: Convert new areas to vector
-   
+    # STEP 6: Raster → vector
     print("\n[6/8] Converting raster to vector...")
     mask = new_only == 1
     shapes_gen = shapes(new_only, mask=mask, transform=new_transform)
@@ -128,9 +117,7 @@ def find_new_ditches(new_layer_path, old_layer_path, output_dir,
     gdf.to_file(output_vector, driver="GPKG")
     print(f" Vector layer saved: {output_vector}")
 
- 
-    # STEP 7: Remove overlaps near old ditches
-   
+    # STEP 7: Remove overlaps
     print("\n[7/8] Filtering features overlapping old ditches...")
     old_shapes_gen = shapes(old_bin, mask=old_bin == 1, transform=new_transform)
     old_geoms = [shape(geom) for geom, val in old_shapes_gen if val == 1]
@@ -149,21 +136,42 @@ def find_new_ditches(new_layer_path, old_layer_path, output_dir,
     print(f" Final 'new ditches only' layer saved: {filtered_path}")
     print(f"   ➜ Removed {len(gdf) - len(gdf_filtered)} overlapping features")
 
-    
-    # STEP 8: Add to QGIS
-  
-    iface.addVectorLayer(filtered_path, "New Ditches", "ogr")
     print("\nProcess completed successfully!")
     print(f" Results in: {output_dir}")
 
 
-""" Example how to use:
-find_new_ditches(
-    new_layer_path: str,
-    old_layer_path: str,
-    output_dir: str,
-    threshold: float = 0.5,  #threshold for probability map's ditch pixels
-    tolerance_pixels: int = 2,
-    buffer_distance: int = 3 #buffer (m) for ditches
-)
-"""
+# ---------------------------------------------------------
+# COMMAND LINE INTERFACE (GUI-like usage)
+# ---------------------------------------------------------
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Identify new ditch segments between new and old raster probability maps."
+    )
+
+    parser.add_argument("new_layer", help="Path to NEW ditch probability raster (directory with .tif tiles).")
+    parser.add_argument("old_layer", help="Path to OLD ditch probability raster (directory with .tif tiles).")
+    parser.add_argument("output_dir", help="Output directory.")
+
+    parser.add_argument("--threshold", type=float, default=0.5,
+                        help="Probability threshold for ditch pixels (default: 0.5)")
+    parser.add_argument("--tolerance", type=int, default=2,
+                        help="Pixel dilation tolerance (default: 2)")
+    parser.add_argument("--buffer", type=int, default=3,
+                        help="Buffer distance to old ditches in meters (default: 3)")
+
+    args = parser.parse_args()
+
+    find_new_ditches(
+        args.new_layer,
+        args.old_layer,
+        args.output_dir,
+        threshold=args.threshold,
+        tolerance_pixels=args.tolerance,
+        buffer_distance=args.buffer,
+    )
+
+"python find_new_ditches.py ./new_rasters ./old_rasters ./output \
+    --threshold 0.55 --tolerance 2 --buffer 3"
