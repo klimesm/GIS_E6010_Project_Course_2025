@@ -1,7 +1,5 @@
 import sys
 import os
-import glob
-import shutil
 import subprocess
 from PySide6.QtWidgets import (
     QApplication, QWidget, QPushButton, QLabel, QFileDialog, QLineEdit,
@@ -16,7 +14,7 @@ class BackendWorker(QThread):
 
     def __init__(self, python_exec, backend_script,
                  model_path, input_dir, output_dir,
-                 threshold, prob_map, class_map, depth_map):
+                 threshold, prob_map, binary_map, depth_map):
         super().__init__()
         self.python_exec = python_exec
         self.backend_script = backend_script
@@ -25,7 +23,7 @@ class BackendWorker(QThread):
         self.output_dir = output_dir
         self.threshold = threshold
         self.prob_map = prob_map
-        self.class_map = class_map
+        self.binary_map = binary_map
         self.depth_map = depth_map
 
     def run(self):
@@ -41,8 +39,8 @@ class BackendWorker(QThread):
 
             if not self.prob_map:
                 args.append("--no_prob_map")
-            if not self.class_map:
-                args.append("--no_class_map")
+            if not self.binary_map:
+                args.append("--no_binary_map")
             if not self.depth_map:
                 args.append("--no_depth_map")
 
@@ -175,7 +173,7 @@ class GUI(QWidget):
         layout.addWidget(self.cb_prob)
 
         self.cb_class = QCheckBox("Generate binary map")
-        self.cb_class.setChecked(self.settings.value("class_map", "true") == "true")
+        self.cb_class.setChecked(self.settings.value("binary_map", "true") == "true")
         layout.addWidget(self.cb_class)
 
         self.cb_depth = QCheckBox("Generate depth map")
@@ -214,7 +212,7 @@ class GUI(QWidget):
         self.settings.setValue("out_path", self.out_path.text())
         self.settings.setValue("threshold", self.threshold.value())
         self.settings.setValue("prob_map", "true" if self.cb_prob.isChecked() else "false")
-        self.settings.setValue("class_map", "true" if self.cb_class.isChecked() else "false")
+        self.settings.setValue("binary_map", "true" if self.cb_class.isChecked() else "false")
         self.settings.setValue("depth_map", "true" if self.cb_depth.isChecked() else "false")
 
     def log_write(self, text):
@@ -225,7 +223,7 @@ class GUI(QWidget):
     def select_python(self):
         file, _ = QFileDialog.getOpenFileName(self, "Select python interpreter (python.exe)", "", "Python (python.exe)")
         if file:
-            self.python_exec.setText(file)
+            self.python_exec.setEditText(file)
             self.save()
 
     def select_script(self):
@@ -255,7 +253,7 @@ class GUI(QWidget):
     def run_prediction(self):
         self.save()
         if not (
-            os.path.isfile(self.python_exec.text()) and
+            os.path.isfile(self.python_exec.currentText()) and
             os.path.isfile(self.backend_script.text()) and
             os.path.isdir(self.model_path.text()) and
             os.path.isdir(self.dem_path.text()) and
@@ -268,14 +266,14 @@ class GUI(QWidget):
         self.log_write(" Running backend...\n")
 
         self.worker = BackendWorker(
-            python_exec=self.python_exec.text(),
+            python_exec=self.python_exec.currentText(),
             backend_script=self.backend_script.text(),
             model_path=self.model_path.text(),
             input_dir=self.dem_path.text(),
             output_dir=self.out_path.text(),
             threshold=self.threshold.value(),
             prob_map=self.cb_prob.isChecked(),
-            class_map=self.cb_class.isChecked(),
+            binary_map=self.cb_class.isChecked(),
             depth_map=self.cb_depth.isChecked()
         )
 
