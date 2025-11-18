@@ -426,3 +426,28 @@ Present:  Nette, Emma, Janna, Yuhan, Matej
   - Prepare the final presentation for the client meeting on Wednesday 19.11 at 14:00->
   - Work on the poster/divide poster sections
   - Assign and agree on all finalization tasks (who handles what etc.)
+
+  ## Tuesday 18.11
+  Meeting at campus (9:15-10:45)
+  
+  Present: All
+
+  - Reviewed the trained model and the GUI interface: what it looks like and how it works
+  - Discussed age determination results; went through outputs and everything works well
+    - Modifiding codes to work with the GUI interface and ensured it can also be executed via command line so it can be integrated into the GUI
+  - Created the presentation outline for tomorrow’s final client meeting and divided tasks:
+    - Nette: introduction, age determination, conclusion
+    - Matje: output, GUI results
+    - Emma: age determination
+    - Janna: documentation and report
+    - Yuhan: takes notes
+
+  - Nette and Janna begin writing the report; others will add detailed descriptions of their own workflow steps
+  - Poster is almost ready; final output still needs to be added and corrected before next Monday
+  - Age determination feature has been included in the GUI
+  - Learning diaries must be submitted by Friday
+  - Next week, we will review the final seminar presentation and the poster presentation
+  - Otherwise, everything is nearly ready!
+    
+  - Next:
+    - Client meeting tomorrow, 18.11 (online)
