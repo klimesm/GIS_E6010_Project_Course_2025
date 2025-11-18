@@ -1,6 +1,17 @@
 # Required libraries for geospatial data processing
 # pip install geopandas rasterio shapely numpy pandas
 
+# Example command to run the script via command line:
+# 
+# python age_classification_vectors.py "path/to/probability_map.tif" 
+# "2005:path/to/vector_2005.gpkg,layer_2005;2014:path/to/vector_2014.gpkg,layer_2014;
+# 2020:path/to/vector_2020.gpkg,layer_2020;2025:path/to/vector_2025.gpkg,layer_2025" 
+# "path/to/output.gpkg"
+#
+# - Ensure each vector entry is formatted as `year:path,layer` and separated by semicolons.
+# - Ensure paths containing spaces are enclosed in quotes.
+# - Adjust any other parameters like thresholds by including them as additional arguments.
+
 import geopandas as gpd
 import rasterio
 from rasterio.features import shapes
@@ -162,3 +173,5 @@ if __name__ == "__main__":
         prob_threshold=args.prob_threshold,
         min_overlap_length=args.min_overlap_length
     )
+
+
