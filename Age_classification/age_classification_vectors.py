@@ -6,11 +6,13 @@
 # python age_classification_vectors.py "path/to/probability_map.tif" 
 # "2005:path/to/vector_2005.gpkg,layer_2005;2014:path/to/vector_2014.gpkg,layer_2014;
 # 2020:path/to/vector_2020.gpkg,layer_2020;2025:path/to/vector_2025.gpkg,layer_2025" 
-# "path/to/output.gpkg"
+# "path/to/output.gpkg" --prob_threshold 0.5
 #
 # - Ensure each vector entry is formatted as `year:path,layer` and separated by semicolons.
 # - Ensure paths containing spaces are enclosed in quotes.
-# - Adjust any other parameters like thresholds by including them as additional arguments.
+# - You can adjust the probability threshold using `--prob_threshold {value}` (default is 0.5).
+# - You can set the minimum overlap length using `--min_overlap_length {value}` (default is 10.0).
+# - Adjust other parameters as needed by including their respective flags.
 
 import geopandas as gpd
 import rasterio
@@ -173,5 +175,6 @@ if __name__ == "__main__":
         prob_threshold=args.prob_threshold,
         min_overlap_length=args.min_overlap_length
     )
+
 
 
