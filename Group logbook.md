@@ -451,3 +451,32 @@ Present:  Nette, Emma, Janna, Yuhan, Matej
     
   - Next:
     - Client meeting tomorrow, 18.11 (online)
+
+## Wednesday 19.11 Final Client Meeting
+Online meeting (14:00–14:30)
+
+**What was presented:**
+- Introduction: The complete workflow and outcomes of the project.
+- GUI Application:
+  - Matej demonstrated the standalone PySide6 GUI.
+  - Explained why we shifted from the QGIS plugin to a standalone GUI (library conflicts with QGIS Python environment).
+  - Inference is working perfectly. Training and Testing tabs will be finalized before next Monday.
+  - Feedback: The client said they liked the standalone GUI more than the QGIS plugin.
+- Age Determination:
+  - Nette presented detecting new ditches by comparing probability maps from different years.
+  - Emma presented using National Land Survey (NLS) vector data (2005–2025) to identify when ditches first appeared.
+  - Feedback: Clients acknowledged that age verification is very hard but considered our approach a very good baseline for the future.
+- Report:
+  - Janna presented the final report structure.
+  - Feedback: Clients were satisfied with the proposed structure. They mentioned they had no immediate additions but might have some questions later.
+
+**Discussion**
+- The clients asked if the model can handle the  20 points/m² laser data.
+  We believe the model should work, as the difference between 5 pts and 20 pts is not as big as between 0.5 pts and 5 pts. However, it needs testing first. 
+
+**Next:**
+- Finalize the GUI (implement the training/testing logic connections).
+- Submit the final report, user documentation, poster, and all code materials to the clients and the school by next Monday.
+
+
+
