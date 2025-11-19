@@ -44,7 +44,7 @@
 <div class="code-block-parent">
 <div class="code-block-container">
 <button aria-label="Copy code" class="copy-code-button"><i aria-hidden="true" class="aalto-icon aalto-icon--copy"></i></button>
-<pre style="overflow-x: auto;"><code class="language-bash">python find_new_ditches.py ./new_rasters ./old_rasters ./output --threshold 0.55 --tolerance 2 --buffer 3
+<pre style="overflow-x: auto;"><code class="language-bash">python find_new_ditches.py new_rasters\ old_rasters\ output --threshold 0.55 --tolerance 2 --buffer 3
 </code></pre>
 </div>
 </div>
