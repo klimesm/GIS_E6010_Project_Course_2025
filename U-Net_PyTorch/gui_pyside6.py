@@ -3,7 +3,7 @@ import os
 import subprocess
 from PySide6.QtWidgets import (
     QApplication, QWidget, QPushButton, QLabel, QFileDialog, QLineEdit,
-    QVBoxLayout, QHBoxLayout, QCheckBox, QTextEdit, QDoubleSpinBox
+    QVBoxLayout, QHBoxLayout, QCheckBox, QTextEdit, QDoubleSpinBox, QComboBox
 )
 from PySide6.QtCore import QThread, Signal, QSettings
 
@@ -80,18 +80,7 @@ class GUI(QWidget):
         # path to python in conda env (backend env)
         layout.addWidget(QLabel("Backend python interpreter (conda env):"))
         row = QHBoxLayout()
-        # self.python_exec = QLineEdit()
-        # self.python_exec.setText(self.settings.value("python_exec", ""))
-        # btn = QPushButton("Browse")
-        # btn.clicked.connect(self.select_python)
-        # btn2 = QPushButton("Find Conda Python")
-        # btn2.clicked.connect(self.find_conda_python)
-        # row.addWidget(self.python_exec)
-        # row.addWidget(btn)
-        # row.addWidget(btn2)
-        # layout.addLayout(row)
-        # QComboBox místo QLineEdit
-        from PySide6.QtWidgets import QComboBox
+
         self.python_exec = QComboBox()
         self.python_exec.setEditable(True)
         self.python_exec.setMinimumWidth(350)
@@ -281,41 +270,6 @@ class GUI(QWidget):
         self.worker.done_signal.connect(lambda: self.run_btn.setEnabled(True))
         self.worker.start()
 
-    # def find_conda_pythons():
-    #     possible_env_paths = []
-    #
-    #     # 1) Standard Anaconda/Miniconda user paths
-    #     user = os.getenv("USERNAME") or ""
-    #     user_dirs = [
-    #         rf"C:\Users\{user}\anaconda3\envs",
-    #         rf"C:\Users\{user}\miniconda3\envs"
-    #     ]
-    #
-    #     # 2) ProgramData installs
-    #     programdata_dirs = [
-    #         r"C:\ProgramData\Anaconda3\envs",
-    #         r"C:\ProgramData\Miniconda3\envs"
-    #     ]
-    #
-    #     # 3) Your custom path
-    #     custom_dirs = [
-    #         r"C:\conda\envs"
-    #     ]
-    #
-    #     search_dirs = user_dirs + programdata_dirs + custom_dirs
-    #
-    #     python_paths = []
-    #
-    #     for root in search_dirs:
-    #         if not os.path.isdir(root):
-    #             continue
-    #
-    #         for env_name in os.listdir(root):
-    #             python_exe = os.path.join(root, env_name, "python.exe")
-    #             if os.path.isfile(python_exe):
-    #                 python_paths.append(python_exe)
-    #
-    #     return python_paths
     def find_conda_pythons(self):
         python_paths = []
 
