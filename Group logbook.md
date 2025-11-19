@@ -3,6 +3,7 @@
 ## First team meeting: 5. 9.2025 (during the first introduction seminar)
 **Present:** All (Nette, Janna, Emma, Yuhan, Ville and Matej)
 
+
 **What was discussed/decided:**
 - Got to know eachother
 - Telegram the main communication channel (created a chat group)
