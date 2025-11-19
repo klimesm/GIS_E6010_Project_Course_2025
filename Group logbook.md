@@ -450,10 +450,12 @@ Present:  Nette, Emma, Janna, Yuhan, Matej
   - Otherwise, everything is nearly ready!
     
   - Next:
-    - Client meeting tomorrow, 18.11 (online)
+    - Client meeting tomorrow, 19.11 (online)
 
 ## Wednesday 19.11 Final Client Meeting
 Online meeting (14:00–14:30)
+
+Present: All
 
 **What was presented:**
 - Introduction: The complete workflow and outcomes of the project.
