@@ -3,7 +3,6 @@
 ## First team meeting: 5. 9.2025 (during the first introduction seminar)
 **Present:** All (Nette, Janna, Emma, Yuhan, Ville and Matej)
 
-
 **What was discussed/decided:**
 - Got to know eachother
 - Telegram the main communication channel (created a chat group)
@@ -16,6 +15,7 @@
 
 ## Second team meeting: 9. 9.2025 (online)
 **Present:** All (Nette, Janna, Emma, Yuhan, Ville and Matej)
+
 **What was discussed/decided:**
 - We did some research on the problem and have some idea about the workflow
 - We will contact the client today
