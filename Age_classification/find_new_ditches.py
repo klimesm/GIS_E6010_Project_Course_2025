@@ -173,5 +173,5 @@ if __name__ == "__main__":
         buffer_distance=args.buffer,
     )
 
-"python new_ditches.py input_probability_new_L344\ input_probability_old_L344\ output --threshold 0.5 --tolerance 2 --buffer 3
+"python new_ditches.py input_new_rasters\ input_old_rasters\ output --threshold 0.5 --tolerance 2 --buffer 3
 "
