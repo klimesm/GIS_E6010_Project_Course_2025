@@ -13,24 +13,27 @@ from torchmetrics.classification import (BinaryAccuracy,
 
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-L.seed_everything(14, workers=True)
+from config import ModelConfig
 
 
 class DitchNet(L.LightningModule):
-    def __init__(self, encoder_name="efficientnet-b4", pos_weight=3.0, lr=1e-4, in_channels=2):
+    def __init__(self, config: ModelConfig):
         super().__init__()
-        self.save_hyperparameters("encoder_name", "pos_weight", "lr", "in_channels")
+        L.seed_everything(config.model_seed, workers=True)
+        self.save_hyperparameters(config)
+
+        self.config = config
 
         # U-Net segmentation model from segmentation_models_pytorch
         self.model = smp.Unet(
-            encoder_name=encoder_name,
+            encoder_name=config.encoder_name,
             encoder_weights=None,
-            in_channels=in_channels,
+            in_channels=config.in_channels,
             classes=1
         )
 
         # Weighted BCE loss to compensate for severe class imbalance (few ditch pixels vs large background)
-        self.register_buffer("pos_weight", torch.tensor(pos_weight))
+        self.register_buffer("pos_weight", torch.tensor(config.pos_weight))
         self.bce_loss = nn.BCEWithLogitsLoss(pos_weight=self.pos_weight)
 
         # Define evaluation metrics for binary classification
@@ -89,7 +92,10 @@ class DitchNet(L.LightningModule):
 
     def configure_optimizers(self):
         # AdamW optimizer with mild weight decay for stability
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=1e-4)
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr, weight_decay=self.config.weight_decay)
+
+        if not self.config.use_scheduler:
+            return optimizer
 
         # Reduce learning rate when validation loss plateaus
         scheduler = ReduceLROnPlateau(optimizer,
@@ -106,6 +112,6 @@ class DitchNet(L.LightningModule):
             "optimizer": optimizer,
             "lr_scheduler": {
                 "scheduler": scheduler,
-                "monitor": "val_loss"
+                "monitor": self.config.scheduler_monitor
             }
         }
