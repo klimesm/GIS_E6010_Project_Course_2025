@@ -16,7 +16,9 @@ from sklearn.model_selection import train_test_split
 from preprocessing import DitchDataset
 from model import DitchNet
 
-from config import TrainConfig, ModelConfig
+from utils.config import TrainConfig, ModelConfig
+from utils.training_args import add_training_args
+from utils.model_args import add_model_args, add_scheduler_args
 
 
 class Train:
@@ -148,91 +150,9 @@ class Main:
     def _parse_arguments():
         parser = argparse.ArgumentParser(description="Train the DitchNet segmentation model.")
 
-        parser.add_argument("feature_dir", help="Path to directory containing input feature images.")
-        parser.add_argument("label_dir", help="Path to directory containing label (mask) images.")
-
-        parser.add_argument("max_epochs", type=int, help="Maximum number of training epochs to run.")
-
-        parser.add_argument("--encoder_name",
-                            default="efficientnet-b4",
-                            choices=smp.encoders.get_encoder_names(),
-                            help="Encoder backbone for DitchNet. "
-                                 "Choices: https://smp.readthedocs.io/en/latest/encoders.html")
-
-        parser.add_argument("--pos_weight",
-                            type=float, default=3,
-                            help="Weighting factor for positive (ditch) class in the BCE loss to handle imbalance.")
-
-        parser.add_argument("--batch_size", type=int, default=4, help="Batch size for training.")
-        parser.add_argument("--num_workers", type=int, default=0,
-                            help="Number of parallel CPU workers used for loading batches from disk.")
-
-        parser.add_argument("--compute_precision",
-                            choices=["16-true", "16-mixed",
-                                     "bf16-true", "bf16-mixed",
-                                     "32-true", "64-true",
-                                     "64", "32", "16", "bf16"],
-
-                            default="32-true",
-                            help="Computation precision for training. More information: "
-                                 "https://lightning.ai/docs/pytorch/stable/common/precision_basic.html")
-
-        parser.add_argument("--learning_rate",
-                            type=float, default=1e-4,
-                            help=None)
-
-        parser.add_argument("--in_channels",
-                            type=int, default=2,
-                            help=None)
-
-        parser.add_argument("--no_scheduler",
-                            dest="use_scheduler",
-                            action="store_false",
-                            help=None)
-
-        parser.add_argument("--scheduler_monitor",
-                            type=str,
-                            default="val_loss",
-                            choices=["train_loss", "train_acc", "train_recall", "train_prec", "train_f1", "train_mcc",
-                                     "val_loss", "val_acc", "val_recall", "val_prec", "val_f1", "val_mcc"],
-                            help="Metric name to monitor for learning rate scheduling.")
-
-        parser.add_argument("--scheduler_mode",
-                            type=str,
-                            default="min",
-                            choices=["min", "max"],
-                            help='ReduceLROnPlateau mode: "min" or "max".')
-
-        parser.add_argument("--scheduler_factor",
-                            type=float,
-                            default=0.5,
-                            help="Factor by which to reduce the learning rate.")
-
-        parser.add_argument("--scheduler_patience",
-                            type=int,
-                            default=5,
-                            help="Number of epochs with no improvement before reducing learning rate.")
-
-        parser.add_argument("--scheduler_cooldown",
-                            type=int,
-                            default=5,
-                            help="Cooldown epochs after learning rate reduction.")
-
-        parser.add_argument("--scheduler_min_lr",
-                            type=float,
-                            default=1e-7,
-                            help="Minimum learning rate allowed.")
-
-        parser.add_argument("--scheduler_threshold",
-                            type=float,
-                            default=1e-3,
-                            help="Improvement threshold to trigger learning rate reduction.")
-
-        parser.add_argument("--scheduler_threshold_mode",
-                            type=str,
-                            default="rel",
-                            choices=["rel", "abs"],
-                            help='Threshold mode: "rel" or "abs".')
+        add_training_args(parser)
+        add_model_args(parser)
+        add_scheduler_args(parser)
 
         return parser.parse_args()
 

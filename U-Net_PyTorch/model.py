@@ -13,7 +13,7 @@ from torchmetrics.classification import (BinaryAccuracy,
 
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from config import ModelConfig
+from utils.config import ModelConfig
 
 
 class DitchNet(L.LightningModule):
@@ -99,13 +99,13 @@ class DitchNet(L.LightningModule):
 
         # Reduce learning rate when validation loss plateaus
         scheduler = ReduceLROnPlateau(optimizer,
-                                      mode="min",
-                                      factor=0.5,
-                                      patience=5,
-                                      cooldown=5,
-                                      min_lr=1e-7,
-                                      threshold=1e-3,
-                                      threshold_mode="rel")
+                                      mode=self.config.scheduler_mode,
+                                      factor=self.config.scheduler_factor,
+                                      patience=self.config.scheduler_patience,
+                                      cooldown=self.config.scheduler_cooldown,
+                                      min_lr=self.config.scheduler_min_lr,
+                                      threshold=self.config.scheduler_min_lr,
+                                      threshold_mode=self.config.scheduler_threshold_mode)
 
         # Return both optimizer and scheduler to Lightning
         return {

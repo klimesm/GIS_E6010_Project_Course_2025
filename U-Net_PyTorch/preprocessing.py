@@ -14,10 +14,10 @@ import rasterio
 from rasterio import features
 from skimage.transform import resize
 
-from utils import (minmax_normalized_image,
-                   create_hpmf_layer,
-                   create_isi_layer,
-                   create_feature_layer)
+from utils.tools import (minmax_normalized_image,
+                         create_hpmf_layer,
+                         create_isi_layer,
+                         create_feature_layer)
 
 from whitebox.whitebox_tools import WhiteboxTools
 wbt = WhiteboxTools()

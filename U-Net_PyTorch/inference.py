@@ -9,14 +9,14 @@ import numpy as np
 from skimage.transform import resize
 import rasterio
 
-from utils import (minmax_normalized_image,
-                   create_hpmf_layer,
-                   create_isi_layer,
-                   create_feature_layer)
+from utils.tools import (minmax_normalized_image,
+                         create_hpmf_layer,
+                         create_isi_layer,
+                         create_feature_layer)
 
 from model import DitchNet
 
-from config import InferenceConfig
+from utils.config import InferenceConfig
 
 from osgeo import gdal
 gdal.UseExceptions()
