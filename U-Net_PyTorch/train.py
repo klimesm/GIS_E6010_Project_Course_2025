@@ -4,7 +4,6 @@ import lightning as L
 from torch.utils.data import DataLoader
 from pytorch_lightning.loggers import CSVLogger
 from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
-import segmentation_models_pytorch as smp
 
 from pathlib import Path
 
@@ -17,15 +16,15 @@ from preprocessing import DitchDataset
 from model import DitchNet
 
 from utils.config import TrainConfig, ModelConfig
-from utils.training_args import add_training_args
-from utils.model_args import add_model_args, add_scheduler_args
+from utils.cli_args.training_args import add_training_args
+from utils.cli_args.model_args import add_model_args, add_scheduler_args
 
 
 class Train:
     def __init__(self, config: TrainConfig):
         self.config = config
 
-        L.seed_everything(config.model_seed, workers=True)
+        L.seed_everything(14, workers=True)
 
         # Initialize the segmentation model
         self.model = DitchNet(config.model_config)
@@ -45,8 +44,7 @@ class Train:
         self.logger = CSVLogger(save_dir=Path.cwd() / "lightning_logs", name="train_logs")
         self.callbacks = self._set_callbacks()
 
-    @staticmethod
-    def _construct_train_val_sets(feature_dir, label_dir):
+    def _construct_train_val_sets(self, feature_dir, label_dir):
         # Resolve and sort all feature and label paths
         X = sorted(Path(feature_dir).resolve().iterdir())
         y = sorted(Path(label_dir).resolve().iterdir())
@@ -55,7 +53,7 @@ class Train:
             raise ValueError("Feature and label directories must contain the same number of files.")
 
         # Split into training and validation sets (80/20)
-        return train_test_split(X, y, test_size=0.20, random_state=14)
+        return train_test_split(X, y, test_size=self.config.val_size, random_state=14)
 
     @staticmethod
     def _construct_transforms():
@@ -138,6 +136,7 @@ class Main:
                                    args.max_epochs,
                                    encoder_name=args.encoder_name,
                                    pos_weight=args.pos_weight,
+                                   val_size=args.val_size,
                                    batch_size=args.batch_size,
                                    num_workers=args.num_workers,
                                    compute_precision=args.compute_precision,

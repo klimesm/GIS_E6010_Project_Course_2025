@@ -19,6 +19,9 @@ from utils.tools import (minmax_normalized_image,
                          create_isi_layer,
                          create_feature_layer)
 
+from utils.config import PreprocessingConfig
+from utils.cli_args.preprocessing_args import add_preprocessing_args
+
 from whitebox.whitebox_tools import WhiteboxTools
 wbt = WhiteboxTools()
 wbt.verbose = False
@@ -58,21 +61,20 @@ class DitchDataset(Dataset):
 
 
 class ChipGenerator:
-    def __init__(self, input_dem_dir, label_vector_data, output_dir, mode="train", label_hpmf_threshold=-0.075):
-        self.mode = mode
+    def __init__(self, config: PreprocessingConfig):
+        self.config = config
+        self.mode = config.mode
 
         # Resolve input/output paths
-        self.input_dem_dir = Path(input_dem_dir).resolve()
-        self.label_vector_data = label_vector_data
-        self.output_dir = Path(output_dir).resolve()
+        self.input_dem_dir = Path(config.input_dem_dir).resolve()
+        self.label_vector_data = config.label_vector_data
+        self.output_dir = Path(config.output_dir).resolve()
 
         # Define and prepare directories
         self.data_dir, self.temp_dir = None, None
         self.hpmf_temp, self.isi_temp, self.label_temp = None, None, None
         self.feature_chip_dir, self.label_chip_dir = None, None
         self._set_directories()
-
-        self.label_hpmf_threshold = label_hpmf_threshold
 
     def _set_directories(self):
         # Select output folder based on mode
@@ -124,7 +126,7 @@ class ChipGenerator:
                                          all_touched=True)     # Mark all pixels touched by geometry, not just centers
 
         # Keep only pixels inside the buffer where HPMF <= threshold
-        label_array = np.where((label_array == 1) & (hpmf_array <= self.label_hpmf_threshold), 1, 0)
+        label_array = np.where((label_array == 1) & (hpmf_array <= self.config.label_hpmf_threshold), 1, 0)
 
         # Save the binary label raster (0 = background, 1 = ditch)
         tiff.imwrite(self.label_temp, label_array.astype(np.uint8))
@@ -166,7 +168,7 @@ class ChipGenerator:
         print(f"\nRunning DitchNet preprocessing on DEM files in: {self.input_dem_dir}\n")
 
         print(f"Mode: {self.mode}")
-        print(f"Label HPMF threshold: {self.label_hpmf_threshold}\n")
+        print(f"Label HPMF threshold: {self.config.label_hpmf_threshold}\n")
 
         dem_files = list(self.input_dem_dir.glob("*.tif"))
         if not dem_files:
@@ -236,32 +238,21 @@ class ChipGenerator:
 
 class Main:
     def __init__(self):
-        self.args = self._parse_arguments()
-        self.chip_generator = ChipGenerator(self.args.input_dem_dir,
-                                            self.args.label_vector_data,
-                                            self.args.output_dir,
-                                            mode=self.args.mode,
-                                            label_hpmf_threshold=self.args.label_hpmf_threshold)
+        args = self._parse_arguments()
+        config = PreprocessingConfig(args.input_dem_dir,
+                                     args.label_vector_data,
+                                     args.output_dir,
+                                     mode=args.mode,
+                                     label_hpmf_threshold=args.label_hpmf_threshold)
+
+        self.chip_generator = ChipGenerator(config)
         self.run()
 
     @staticmethod
     def _parse_arguments():
-        parser = argparse.ArgumentParser(description=None)
-
-        parser.add_argument("input_dem_dir", help="Generate training or testing chips from DEM and vector data.")
-        parser.add_argument("label_vector_data",
-                            help="Vector dataset containing labeled ditch features (e.g., .shp, .gpkg).")
-
-        parser.add_argument("output_dir", help='Directory where output "training_data" directory including'
-                                               'feature and label chips will be written.')
-
-        parser.add_argument("--mode", choices=["train", "test"], default="train",
-                            help='Dataset generation mode: "train" for training data, "test" for test data.')
-
-        parser.add_argument("--label_hpmf_threshold",
-                            type=float,
-                            default=-0.075,
-                            help="Keep pixels with HPMF ≤ threshold as label; higher values are ignored.")
+        parser = argparse.ArgumentParser(description="Preprocess DEM data into 512×512 "
+                                                     "feature and label chips for DitchNet.")
+        add_preprocessing_args(parser)
 
         return parser.parse_args()
 

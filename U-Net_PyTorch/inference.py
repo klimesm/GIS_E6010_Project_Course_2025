@@ -17,6 +17,7 @@ from utils.tools import (minmax_normalized_image,
 from model import DitchNet
 
 from utils.config import InferenceConfig
+from utils.cli_args.inference_args import add_inference_args
 
 from osgeo import gdal
 gdal.UseExceptions()
@@ -298,38 +299,7 @@ class Main:
     def _parse_arguments():
         parser = argparse.ArgumentParser(description="Generate ditch probability, binary and depth maps "
                                                      "from DEM data using a trained DitchNet models.")
-
-        parser.add_argument("model_dir", help="Directory containing one or more trained "
-                                              "DitchNet model checkpoints (*.ckpt).")
-
-        parser.add_argument("input_dem_dir", help="Directory containing DEM files (.tif) to process.")
-        parser.add_argument("output_dir", help="Directory where output maps will be saved.")
-
-        parser.add_argument("--threshold",
-                            type=float,
-                            default=0.3,
-                            help="Binarization threshold for the output map.")
-
-        # Optional flags to disable specific output types
-        parser.add_argument("--no_prob_map",
-                            dest="output_prob_map",
-                            action="store_false",
-                            help="Disable saving of the probability map output (enabled by default).")
-
-        parser.add_argument("--no_binary_map",
-                            dest="output_binary_map",
-                            action="store_false",
-                            help="Disable saving of the binary map output (enabled by default).")
-
-        parser.add_argument("--no_depth_map",
-                            dest="output_depth_map",
-                            action="store_false",
-                            help="Disable saving of the depth map output (enabled by default).")
-
-        parser.add_argument("--device",
-                            choices=["cpu", "cuda", "auto"],
-                            default="auto",
-                            help='Computation device: "cpu", "cuda", or "auto" (automatically detect GPU if available).')
+        add_inference_args(parser)
 
         return parser.parse_args()
 

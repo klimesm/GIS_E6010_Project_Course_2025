@@ -94,10 +94,12 @@ class DitchNet(L.LightningModule):
         # AdamW optimizer with mild weight decay for stability
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr, weight_decay=self.config.weight_decay)
 
+        # If scheduler is disabled, return only the optimizer
         if not self.config.use_scheduler:
             return optimizer
 
-        # Reduce learning rate when validation loss plateaus
+        # Return both optimizer and scheduler to Lightning,
+        # it will call the scheduler based on the monitored metric
         scheduler = ReduceLROnPlateau(optimizer,
                                       mode=self.config.scheduler_mode,
                                       factor=self.config.scheduler_factor,
