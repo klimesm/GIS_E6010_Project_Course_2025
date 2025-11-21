@@ -39,7 +39,7 @@
 
 - In the end the outcome was clear: we need to obtain the data so that we can move forward to start finding the ditches.
 
-## Friday 19.8, 9:30–11:00 at campus
+## Friday 19.9, 9:30–11:00 at campus
 **Present:** Nette, Emma, Ville, Matej
 Place: Campus
 
@@ -183,7 +183,7 @@ Present: Nette, Emma, Janna, Matej
     - Notes: Janna
     - Workflow presentation & progress:
         - Random Forest: Emma
-        - U-Net: Matej?
+        - U-Net: Matej
 - Proposal: schedule another meeting in about three weeks (29.10?)
 
 ## Wednesday 8.10 second client meeting 
@@ -212,7 +212,7 @@ Random Forest
 
 U-net
 
-- Ville presented the U-Net approach
+- Matej presented the U-Net approach
   -  The workflow is mainly based on study https://doi.org/10.1080/20964471.2025.2491177
  
 - Next steps in U-net
