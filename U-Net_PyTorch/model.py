@@ -7,7 +7,6 @@ import segmentation_models_pytorch as smp
 from torchmetrics.classification import (BinaryAccuracy,
                                          BinaryRecall,
                                          BinaryPrecision,
-                                         BinaryF1Score,
                                          BinaryMatthewsCorrCoef,
                                          BinaryStatScores)
 
@@ -15,12 +14,13 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from utils.config import ModelConfig
 
+L.seed_everything(14, workers=True)
 
-class DitchNet(L.LightningModule):
+
+class LightningDitchNet(L.LightningModule):
     def __init__(self, config: ModelConfig):
         super().__init__()
-        L.seed_everything(config.model_seed, workers=True)
-        self.save_hyperparameters(config)
+        self.save_hyperparameters(config.__dict__)
 
         self.config = config
 
@@ -40,7 +40,6 @@ class DitchNet(L.LightningModule):
         self.accuracy = BinaryAccuracy()
         self.recall = BinaryRecall()
         self.precision = BinaryPrecision()
-        self.f1_score = BinaryF1Score()
         self.mcc = BinaryMatthewsCorrCoef()
         self.stats = BinaryStatScores()
 
@@ -61,7 +60,6 @@ class DitchNet(L.LightningModule):
             "acc": self.accuracy(predictions, y),
             "recall": self.recall(predictions, y),
             "prec": self.precision(predictions, y),
-            "f1": self.f1_score(predictions, y),
             "mcc": self.mcc(predictions, y)
         }
 
@@ -92,7 +90,7 @@ class DitchNet(L.LightningModule):
 
     def configure_optimizers(self):
         # AdamW optimizer with mild weight decay for stability
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr, weight_decay=self.config.weight_decay)
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.config.lr, weight_decay=self.config.weight_decay)
 
         # If scheduler is disabled, return only the optimizer
         if not self.config.use_scheduler:
@@ -106,7 +104,7 @@ class DitchNet(L.LightningModule):
                                       patience=self.config.scheduler_patience,
                                       cooldown=self.config.scheduler_cooldown,
                                       min_lr=self.config.scheduler_min_lr,
-                                      threshold=self.config.scheduler_min_lr,
+                                      threshold=self.config.scheduler_threshold,
                                       threshold_mode=self.config.scheduler_threshold_mode)
 
         # Return both optimizer and scheduler to Lightning

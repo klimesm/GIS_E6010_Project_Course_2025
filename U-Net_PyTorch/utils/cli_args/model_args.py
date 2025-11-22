@@ -42,10 +42,9 @@ def add_scheduler_args(parser):
     group.add_argument("--scheduler_monitor",
                        type=str,
                        default="val_loss",
-                       choices=[
-                           "train_loss", "train_acc", "train_recall", "train_prec",
-                           "train_f1", "train_mcc", "val_loss", "val_acc", "val_recall",
-                           "val_prec", "val_f1", "val_mcc"],
+                       choices=["train_loss", "train_acc", "train_recall", "train_prec",
+                                "train_mcc", "val_loss", "val_acc", "val_recall",
+                                "val_prec", "val_mcc"],
 
                        help="Metric name to monitor for learning rate scheduling.")
 

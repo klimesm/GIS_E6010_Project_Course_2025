@@ -14,9 +14,9 @@ from utils.tools import (minmax_normalized_image,
                          create_isi_layer,
                          create_feature_layer)
 
-from model import DitchNet
+from model import LightningDitchNet
 
-from utils.config import InferenceConfig
+from utils.config import InferenceConfig, ModelConfig
 from utils.cli_args.inference_args import add_inference_args
 
 from osgeo import gdal
@@ -66,9 +66,13 @@ class Predictor:
 
         print("The following models will be used and their predictions will be averaged:")
 
+        model_config = ModelConfig(encoder_name=self.config.encoder_name, in_channels=self.config.in_channels)
+
         # Load each checkpoint, move model to the selected device, store it
         for ckpt_path in model_dir.glob("*.ckpt"):
-            model = DitchNet.load_from_checkpoint(ckpt_path)
+            model = LightningDitchNet(model_config)
+            checkpoint = torch.load(ckpt_path, map_location="cpu", weights_only=True)
+            model.load_state_dict(checkpoint["state_dict"])
             self.models.append(model.to(self.device))
 
             print(ckpt_path.name)
@@ -158,7 +162,7 @@ class Predictor:
 
     def _output_binary_map(self, input_path, profile, output_array):
         # Convert probabilities to binary values using threshold
-        filtered_output_array = (output_array >= self.threshold).astype(np.uint8)
+        filtered_output_array = (output_array >= self.config.threshold).astype(np.uint8)
 
         # Save binary map
         profile.update(dtype=rasterio.uint8, count=1, nodata=None)
@@ -195,8 +199,8 @@ class Predictor:
             return
 
         # Generate feature layers (HPMF and ISI) and normalize them
-        hpmf_array = minmax_normalized_image(create_hpmf_layer(dem_path, self.hpmf_temp), no_data_value=1)
-        isi_array = minmax_normalized_image(create_isi_layer(dem_path, self.isi_temp), no_data_value=0)
+        hpmf_array = minmax_normalized_image(create_hpmf_layer(dem_path, self.hpmf_temp), constant_fill_value=1)
+        isi_array = minmax_normalized_image(create_isi_layer(dem_path, self.isi_temp), constant_fill_value=0)
 
         # Slight upscaling to align with expected model resolution
         resampled_height = int(orig_height + (orig_height * 0.024))
@@ -241,18 +245,18 @@ class Predictor:
             self._output_virtual_raster(self.output_depth_dir, "ditch_depth_map.vrt")
 
     def predict(self):
-        print(f"\nRunning DitchNet inference on DEM files in: {self.input_dem_dir}\n")
+        print(f"\nRunning LightningDitchNet inference on DEM files in: {self.input_dem_dir}\n")
 
         dem_files = list(self.input_dem_dir.glob("*.tif"))
         if not dem_files:
             print("No DEM (.tif) files found — nothing to process.")
-            if self.output_probability_dir.exists():
+            if self.config.output_prob_map:
                 shutil.rmtree(self.output_probability_dir)
 
-            if self.output_binary_dir.exists():
+            if self.config.output_binary_map:
                 shutil.rmtree(self.output_binary_dir)
 
-            if self.output_depth_dir.exists():
+            if self.config.output_depth_map:
                 shutil.rmtree(self.output_depth_dir)
 
             if self.temp_dir.exists():
@@ -283,22 +287,24 @@ class Predictor:
 class Main:
     def __init__(self):
         args = self._parse_arguments()
-        config = InferenceConfig(model_dir=args.model_dir,
-                                 input_dem_dir=args.input_dem_dir,
-                                 output_dir=args.output_dir,
-                                 threshold=args.threshold,
-                                 output_prob_map=args.output_prob_map,
-                                 output_binary_map=args.output_binary_map,
-                                 output_depth_map=args.output_depth_map,
-                                 device=args.device)
+        inference_config = InferenceConfig(encoder_name=args.encoder_name,
+                                           in_channels=args.in_channels,
+                                           model_dir=args.model_dir,
+                                           input_dem_dir=args.input_dem_dir,
+                                           output_dir=args.output_dir,
+                                           threshold=args.threshold,
+                                           output_prob_map=args.output_prob_map,
+                                           output_binary_map=args.output_binary_map,
+                                           output_depth_map=args.output_depth_map,
+                                           device=args.device)
 
-        self.predictor = Predictor(config)
+        self.predictor = Predictor(inference_config)
         self.run()
 
     @staticmethod
     def _parse_arguments():
         parser = argparse.ArgumentParser(description="Generate ditch probability, binary and depth maps "
-                                                     "from DEM data using a trained DitchNet models.")
+                                                     "from DEM data using a trained LightningDitchNet models.")
         add_inference_args(parser)
 
         return parser.parse_args()

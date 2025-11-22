@@ -1,6 +1,8 @@
 import argparse
+import yaml
 
 import lightning as L
+import torch
 from torch.utils.data import DataLoader
 from pytorch_lightning.loggers import CSVLogger
 
@@ -10,8 +12,8 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 from preprocessing import DitchDataset
-from model import DitchNet
-from utils.config import TestConfig
+from model import LightningDitchNet
+from utils.config import TestConfig, ModelConfig
 from utils.cli_args.test_args import add_test_args
 
 
@@ -19,7 +21,9 @@ class Test:
     def __init__(self, config: TestConfig):
         self.config = config
 
-        self.model = DitchNet.load_from_checkpoint(config.model_path)
+        # Initialize the segmentation model
+        self.model = self._init_model()
+
         self.X_test, self.y_test = self._construct_test_set(config.feature_dir, config.label_dir)
 
         self.test_transform = A.Compose([ToTensorV2()],
@@ -28,6 +32,27 @@ class Test:
         self.test_dataloader = self._construct_dataloader(config.batch_size, config.num_workers)
 
         self.logger = CSVLogger(save_dir=Path.cwd() / "lightning_logs", name="test_logs")
+
+    def _init_hyperparameters(self):
+        with open(self.config.hparams_path) as file:
+            hyperparameters = yaml.safe_load(file)
+
+        encoder_name, in_channels, pos_weight = (hyperparameters["encoder_name"],
+                                                 hyperparameters["in_channels"],
+                                                 hyperparameters["pos_weight"])
+
+        return encoder_name, in_channels, pos_weight
+
+    def _init_model(self):
+        encoder_name, in_channels, pos_weight = self._init_hyperparameters()
+
+        model_config = ModelConfig(encoder_name=encoder_name, in_channels=in_channels, pos_weight=pos_weight)
+
+        model = LightningDitchNet(model_config)
+        checkpoint = torch.load(self.config.model_checkpoint_path, map_location="cpu", weights_only=True)
+        model.load_state_dict(checkpoint["state_dict"])
+
+        return model
 
     @staticmethod
     def _construct_test_set(feature_dir, label_dir):
@@ -65,19 +90,20 @@ class Test:
 class Main:
     def __init__(self):
         args = self._parse_arguments()
-        config = TestConfig(args.model_path,
-                            args.feature_dir,
-                            args.label_dir,
-                            batch_size=args.batch_size,
-                            num_workers=args.num_workers,
-                            compute_precision=args.compute_precision)
+        test_config = TestConfig(args.model_checkpoint_path,
+                                 args.hparams_path,
+                                 args.feature_dir,
+                                 args.label_dir,
+                                 batch_size=args.batch_size,
+                                 num_workers=args.num_workers,
+                                 compute_precision=args.compute_precision)
 
-        self.tester = Test(config)
+        self.tester = Test(test_config)
         self.run()
 
     @staticmethod
     def _parse_arguments():
-        parser = argparse.ArgumentParser(description="Test the trained DitchNet segmentation model.")
+        parser = argparse.ArgumentParser(description="Test the trained LightningDitchNet segmentation model.")
         add_test_args(parser)
 
         return parser.parse_args()

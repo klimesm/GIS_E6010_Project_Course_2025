@@ -1,5 +1,9 @@
 def add_test_args(parser):
-    parser.add_argument("model_path", help="Path to the trained DitchNet model (.ckpt file).")
+    parser.add_argument("model_checkpoint_path",
+                        help="Path to the trained LightningDitchNet model checkpoint (.ckpt file).")
+
+    parser.add_argument("hparams_path",
+                        help="Path to the hparams.yaml file saved during training.")
 
     parser.add_argument("feature_dir", help="Path to directory containing input feature images.")
     parser.add_argument("label_dir", help="Path to directory containing label (mask) images.")

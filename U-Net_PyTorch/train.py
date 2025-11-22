@@ -13,21 +13,21 @@ from albumentations.pytorch import ToTensorV2
 from sklearn.model_selection import train_test_split
 
 from preprocessing import DitchDataset
-from model import DitchNet
+from model import LightningDitchNet
 
 from utils.config import TrainConfig, ModelConfig
 from utils.cli_args.training_args import add_training_args
 from utils.cli_args.model_args import add_model_args, add_scheduler_args
+
+L.seed_everything(14, workers=True)
 
 
 class Train:
     def __init__(self, config: TrainConfig):
         self.config = config
 
-        L.seed_everything(14, workers=True)
-
         # Initialize the segmentation model
-        self.model = DitchNet(config.model_config)
+        self.model = LightningDitchNet(config.model_config)
 
         # Split dataset into training and validation sets
         self.X_train, self.X_val, self.y_train, self.y_val = self._construct_train_val_sets(config.feature_dir,
@@ -52,7 +52,7 @@ class Train:
         if len(X) != len(y):
             raise ValueError("Feature and label directories must contain the same number of files.")
 
-        # Split into training and validation sets (80/20)
+        # Split into training and validation sets
         return train_test_split(X, y, test_size=self.config.val_size, random_state=14)
 
     @staticmethod
@@ -89,11 +89,19 @@ class Train:
 
         return training_dataloader, validation_dataloader
 
-    @staticmethod
-    def _set_callbacks():
+    def _set_callbacks(self):
         # Save top-performing checkpoints and enable early stopping
-        checkpoint = ModelCheckpoint(save_weights_only=True, save_top_k=10, monitor="val_mcc", mode="max")
-        early_stop = EarlyStopping(patience=50, monitor="val_loss", mode="min")
+        checkpoint = ModelCheckpoint(save_weights_only=self.config.save_weights_only,
+                                     save_top_k=self.config.save_top_k,
+                                     monitor=self.config.checkpoint_monitor,
+                                     mode=self.config.checkpoint_mode)
+
+        if not self.config.use_early_stop:
+            return [checkpoint]
+
+        early_stop = EarlyStopping(patience=self.config.early_stop_patience,
+                                   monitor=self.config.early_stop_monitor,
+                                   mode=self.config.early_stop_mode)
 
         return [checkpoint, early_stop]
 
@@ -134,12 +142,21 @@ class Main:
         train_config = TrainConfig(args.feature_dir,
                                    args.label_dir,
                                    args.max_epochs,
-                                   encoder_name=args.encoder_name,
-                                   pos_weight=args.pos_weight,
                                    val_size=args.val_size,
                                    batch_size=args.batch_size,
                                    num_workers=args.num_workers,
                                    compute_precision=args.compute_precision,
+
+                                   save_weights_only=args.save_weights_only,
+                                   save_top_k=args.save_top_k,
+                                   checkpoint_monitor=args.checkpoint_monitor,
+                                   checkpoint_mode=args.checkpoint_mode,
+
+                                   use_early_stop=args.use_early_stop,
+                                   early_stop_patience=args.early_stop_patience,
+                                   early_stop_monitor=args.early_stop_monitor,
+                                   early_stop_mode=args.early_stop_mode,
+
                                    model_config=model_config)
 
         self.trainer = Train(train_config)
@@ -147,7 +164,7 @@ class Main:
 
     @staticmethod
     def _parse_arguments():
-        parser = argparse.ArgumentParser(description="Train the DitchNet segmentation model.")
+        parser = argparse.ArgumentParser(description="Train the LightningDitchNet segmentation model.")
 
         add_training_args(parser)
         add_model_args(parser)

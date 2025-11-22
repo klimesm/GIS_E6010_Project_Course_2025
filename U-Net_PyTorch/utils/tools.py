@@ -10,10 +10,10 @@ wbt = WhiteboxTools()
 wbt.verbose = False
 
 
-def minmax_normalized_image(image, no_data_value):
+def minmax_normalized_image(image, constant_fill_value):
     # Return constant array if image has no variation
     if np.max(image) == np.min(image):
-        return np.full(image.shape, no_data_value, dtype=np.float32)
+        return np.full(image.shape, constant_fill_value, dtype=np.float32)
 
     # Mask NaN and common no-data placeholders
     mask = np.isnan(image) | (image == -9999) | (image == -32768)
@@ -21,7 +21,7 @@ def minmax_normalized_image(image, no_data_value):
 
     # Return constant array if image contains only NaN-values
     if valid.size == 0:
-        return np.full(image.shape, no_data_value, dtype=np.float32)
+        return np.full(image.shape, constant_fill_value, dtype=np.float32)
 
     scaler = MinMaxScaler()
 

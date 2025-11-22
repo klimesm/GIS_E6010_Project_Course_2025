@@ -63,7 +63,6 @@ class DitchDataset(Dataset):
 class ChipGenerator:
     def __init__(self, config: PreprocessingConfig):
         self.config = config
-        self.mode = config.mode
 
         # Resolve input/output paths
         self.input_dem_dir = Path(config.input_dem_dir).resolve()
@@ -78,9 +77,9 @@ class ChipGenerator:
 
     def _set_directories(self):
         # Select output folder based on mode
-        if self.mode == "train":
+        if self.config.mode == "train":
             self.data_dir = self.output_dir / "training_data"
-        elif self.mode == "test":
+        elif self.config.mode == "test":
             self.data_dir = self.output_dir / "test_data"
 
         # Create standard folder structure for generated chips
@@ -114,8 +113,8 @@ class ChipGenerator:
         # Clip vector data (ditches) to DEM tile extent
         clipped_label_vector_gdf = gpd.clip(gdf=label_vector_gdf, mask=dem_gdf)
 
-        # Buffer vector geometries (1.5 m) to give them width
-        buffered_label_geom = clipped_label_vector_gdf.buffer(distance=1.5)
+        # Buffer vector geometries with given width
+        buffered_label_geom = clipped_label_vector_gdf.buffer(distance=self.config.ditch_width)
 
         # Rasterize buffered geometries onto DEM tile grid
         label_array = features.rasterize(shapes=[(geom, 1) for geom in buffered_label_geom.geometry],
@@ -165,17 +164,19 @@ class ChipGenerator:
         tiff.imwrite(feature_chip_file, feature_chip.astype(np.float32))
 
     def generate_chips(self):
-        print(f"\nRunning DitchNet preprocessing on DEM files in: {self.input_dem_dir}\n")
+        print(f"\nRunning LightningDitchNet preprocessing on DEM files in: {self.input_dem_dir}\n")
 
-        print(f"Mode: {self.mode}")
+        print(f"Mode: {self.config.mode}")
+        print(f"Ditch label width: {self.config.ditch_width}")
         print(f"Label HPMF threshold: {self.config.label_hpmf_threshold}\n")
 
         dem_files = list(self.input_dem_dir.glob("*.tif"))
-        if not dem_files:
 
+        if not dem_files:
             print("No DEM (.tif) files found — nothing to process.")
             if self.data_dir.exists():
                 shutil.rmtree(self.data_dir)
+            return
 
         chip_idx = 0
 
@@ -201,8 +202,8 @@ class ChipGenerator:
             label_array = self._create_label_layer(dem_path, hpmf_array, resampled_height, resampled_width)
 
             # Normalize feature layers after label creation to standardize model inputs
-            hpmf_array = minmax_normalized_image(hpmf_array, no_data_value=1)
-            isi_array = minmax_normalized_image(create_isi_layer(dem_path, self.isi_temp), no_data_value=0)
+            hpmf_array = minmax_normalized_image(hpmf_array, constant_fill_value=1)
+            isi_array = minmax_normalized_image(create_isi_layer(dem_path, self.isi_temp), constant_fill_value=0)
 
             # Combine normalized HPMF and ISI into a 2-channel feature array
             feature_array = create_feature_layer(hpmf_array, isi_array, resampled_height, resampled_width)
@@ -243,6 +244,7 @@ class Main:
                                      args.label_vector_data,
                                      args.output_dir,
                                      mode=args.mode,
+                                     ditch_width=args.ditch_width,
                                      label_hpmf_threshold=args.label_hpmf_threshold)
 
         self.chip_generator = ChipGenerator(config)
@@ -251,7 +253,7 @@ class Main:
     @staticmethod
     def _parse_arguments():
         parser = argparse.ArgumentParser(description="Preprocess DEM data into 512×512 "
-                                                     "feature and label chips for DitchNet.")
+                                                     "feature and label chips for LightningDitchNet.")
         add_preprocessing_args(parser)
 
         return parser.parse_args()
