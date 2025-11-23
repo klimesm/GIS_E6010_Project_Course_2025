@@ -3,26 +3,12 @@ import os
 from PySide6.QtWidgets import (
     QWidget, QPushButton, QLabel, QFileDialog, QLineEdit,
     QVBoxLayout, QHBoxLayout, QCheckBox, QTextEdit,
-    QDoubleSpinBox, QComboBox, QGroupBox, QSpinBox
+    QDoubleSpinBox, QComboBox, QGroupBox
 )
 from PySide6.QtCore import QSettings
 
 from workers.inference_worker import InferenceWorker
 from utils.conda_scanner import find_conda_pythons
-
-
-# Static encoder list (no SMP import needed)
-STATIC_ENCODERS = [
-    "resnet18", "resnet34", "resnet50", "resnet101", "resnet152",
-    "efficientnet-b0", "efficientnet-b1", "efficientnet-b2",
-    "efficientnet-b3", "efficientnet-b4", "efficientnet-b5",
-    "efficientnet-b6", "efficientnet-b7",
-    "mobilenet_v2",
-    "vgg11", "vgg16", "vgg19",
-    "timm-mobilenetv3_large_100",
-    "timm-regnety_032",
-    "timm-regnetx_064"
-]
 
 
 class InferenceTab(QWidget):
@@ -38,14 +24,12 @@ class InferenceTab(QWidget):
 
         main = QVBoxLayout()
 
-        # ==========================
-        # BASIC SETTINGS  (only required!)
-        # ==========================
+        # BASIC SETTINGS
         basic_box = QGroupBox("Basic settings")
         basic = QVBoxLayout()
 
         # Python executable
-        basic.addWidget(QLabel("Backend python interpreter (conda env):"))
+        basic.addWidget(QLabel("Python executable (conda env):"))
         row = QHBoxLayout()
         self.python_exec = QComboBox()
         self.python_exec.setEditable(True)
@@ -66,7 +50,7 @@ class InferenceTab(QWidget):
         basic.addLayout(row)
 
         # Model dir
-        basic.addWidget(QLabel("Model directory:"))
+        basic.addWidget(QLabel("Model directory (contains .ckpt and .yaml pairs):"))
         row = QHBoxLayout()
         self.model_path = QLineEdit(self.settings.value("model_path", ""))
         btn = QPushButton("Browse")
@@ -76,7 +60,7 @@ class InferenceTab(QWidget):
         basic.addLayout(row)
 
         # DEM input dir
-        basic.addWidget(QLabel("Input DEM directory:"))
+        basic.addWidget(QLabel("Input DEM directory (tif files):"))
         row = QHBoxLayout()
         self.dem_path = QLineEdit(self.settings.value("dem_path", ""))
         btn = QPushButton("Browse")
@@ -86,7 +70,7 @@ class InferenceTab(QWidget):
         basic.addLayout(row)
 
         # Output dir
-        basic.addWidget(QLabel("Output directory:"))
+        basic.addWidget(QLabel("Output directory (will contain generated maps):"))
         row = QHBoxLayout()
         self.out_path = QLineEdit(self.settings.value("out_path", ""))
         btn = QPushButton("Browse")
@@ -98,9 +82,7 @@ class InferenceTab(QWidget):
         basic_box.setLayout(basic)
         main.addWidget(basic_box)
 
-        # ==========================
-        # ADVANCED SETTINGS (hidden by toggle)
-        # ==========================
+        # advanced settings
         self.adv_toggle_btn = QPushButton("Show advanced settings")
         self.adv_toggle_btn.setCheckable(True)
         self.adv_toggle_btn.setChecked(False)
@@ -108,25 +90,10 @@ class InferenceTab(QWidget):
         main.addWidget(self.adv_toggle_btn)
 
         # Container with advanced options (hidden initially)
-        self.adv_container = QWidget()
-        adv = QVBoxLayout(self.adv_container)
+        self.adv_container = QGroupBox("Advanced settings")
+        adv = QVBoxLayout()
+        self.adv_container.setLayout(adv)
         self.adv_container.setVisible(False)
-
-        # Encoder name
-        adv.addWidget(QLabel("Encoder name (must match training):"))
-        self.encoder_box = QComboBox()
-        self.encoder_box.addItems(STATIC_ENCODERS)
-        self.encoder_box.setCurrentText(self.settings.value("encoder_name", "efficientnet-b4"))
-        adv.addWidget(self.encoder_box)
-
-        # in_channels
-        row = QHBoxLayout()
-        row.addWidget(QLabel("Input channels (must match training):"))
-        self.in_channels = QSpinBox()
-        self.in_channels.setRange(1, 20)
-        self.in_channels.setValue(int(self.settings.value("in_channels", 2)))
-        row.addWidget(self.in_channels)
-        adv.addLayout(row)
 
         # threshold
         row = QHBoxLayout()
@@ -153,6 +120,17 @@ class InferenceTab(QWidget):
         self.cb_depth.setChecked(self.settings.value("depth_map", "true") == "true")
         adv.addWidget(self.cb_depth)
 
+        # Device selection
+        adv.addWidget(QLabel("Device:"))
+        row = QHBoxLayout()
+        self.device_box = QComboBox()
+        self.device_box.addItems(["auto", "cpu", "cuda"])
+        self.device_box.setCurrentText(self.settings.value("device", "auto"))
+        row.addWidget(self.device_box)
+        row.addStretch()
+        adv.addLayout(row)
+
+        self.adv_container.setLayout(adv)
         main.addWidget(self.adv_container)
 
         # ==========================
@@ -189,18 +167,17 @@ class InferenceTab(QWidget):
         self.settings.setValue("out_path", self.out_path.text())
 
         # advanced
-        self.settings.setValue("encoder_name", self.encoder_box.currentText())
-        self.settings.setValue("in_channels", self.in_channels.value())
         self.settings.setValue("threshold", self.threshold.value())
         self.settings.setValue("prob_map", "true" if self.cb_prob.isChecked() else "false")
         self.settings.setValue("binary_map", "true" if self.cb_class.isChecked() else "false")
         self.settings.setValue("depth_map", "true" if self.cb_depth.isChecked() else "false")
+        self.settings.setValue("device", self.device_box.currentText())
 
     # -----------------------------
     # File selection
     # -----------------------------
     def select_python(self):
-        file, _ = QFileDialog.getOpenFileName(self, "Select python.exe", "", "Python (python.exe)")
+        file, _ = QFileDialog.getOpenFileName(self, "Select python executable", "", "Python (python*)")
         if file:
             self.python_exec.setEditText(file)
             self.save()
@@ -245,22 +222,27 @@ class InferenceTab(QWidget):
             self.log_write("Missing required paths!")
             return
 
+        # Ensure at least one output checkbox is selected (backend requires it)
+        if not (self.cb_prob.isChecked() or self.cb_class.isChecked() or self.cb_depth.isChecked()):
+            self.log_write("Select at least one output type (probability / binary / depth).")
+            return
+
         self.run_btn.setEnabled(False)
         self.set_enabled(False)
         self.log_write("Running backend...\n")
 
+        # Instantiate worker with arguments matching InferenceConfig
         self.worker = InferenceWorker(
             python_exec=self.python_exec.currentText(),
             script=self.backend_script_path,
-            encoder=self.encoder_box.currentText(),
-            channels=self.in_channels.value(),
-            model=self.model_path.text(),
-            inp=self.dem_path.text(),
-            out=self.out_path.text(),
-            thr=self.threshold.value(),
-            prob=self.cb_prob.isChecked(),
-            cls=self.cb_class.isChecked(),
-            depth=self.cb_depth.isChecked()
+            model_dir=self.model_path.text(),
+            input_dem_dir=self.dem_path.text(),
+            output_dir=self.out_path.text(),
+            threshold=self.threshold.value(),
+            output_prob_map=self.cb_prob.isChecked(),
+            output_binary_map=self.cb_class.isChecked(),
+            output_depth_map=self.cb_depth.isChecked(),
+            device=self.device_box.currentText()
         )
 
         self.worker.log_signal.connect(self.log_write)
@@ -276,7 +258,7 @@ class InferenceTab(QWidget):
         widgets = [
             self.python_exec,
             self.model_path, self.dem_path, self.out_path,
-            self.encoder_box, self.in_channels,
+            self.device_box,
             self.threshold, self.cb_prob, self.cb_class, self.cb_depth
         ]
         for w in widgets:

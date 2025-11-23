@@ -6,47 +6,62 @@ class InferenceWorker(QThread):
     log_signal = Signal(str)
     done_signal = Signal()
 
-    def __init__(self, python_exec, script,
-                 encoder, channels,
-                 model, inp, out,
-                 thr, prob, cls, depth):
+    def __init__(self,
+                 python_exec,
+                 script,
+                 model_dir,
+                 input_dem_dir,
+                 output_dir,
+                 threshold,
+                 output_prob_map,
+                 output_binary_map,
+                 output_depth_map,
+                 device):
 
         super().__init__()
 
         self.python_exec = python_exec
         self.script = script
 
-        self.encoder = encoder
-        self.channels = channels
+        # GUI inputs
+        self.model_dir = model_dir
+        self.input_dem_dir = input_dem_dir
+        self.output_dir = output_dir
 
-        self.model = model
-        self.inp = inp
-        self.out = out
-
-        self.thr = thr
-        self.prob = prob
-        self.cls = cls
-        self.depth = depth
+        self.threshold = threshold
+        self.output_prob_map = output_prob_map
+        self.output_binary_map = output_binary_map
+        self.output_depth_map = output_depth_map
+        self.device = device
 
     def run(self):
         try:
+
+            # DUMMY VALUES – backend si reálné načte sám z YAML
+            encoder_name = "auto"
+            in_channels = "2"
+
             args = [
                 self.python_exec,
                 self.script,
-                self.encoder,
-                str(self.channels),
-                self.model,
-                self.inp,
-                self.out,
-                "--threshold", str(self.thr)
+                encoder_name,
+                in_channels,
+                self.model_dir,
+                self.input_dem_dir,
+                self.output_dir,
+                "--threshold", str(self.threshold),
+                "--device", self.device
             ]
 
-            if not self.prob:
+            if not self.output_prob_map:
                 args.append("--no_prob_map")
-            if not self.cls:
+            if not self.output_binary_map:
                 args.append("--no_binary_map")
-            if not self.depth:
+            if not self.output_depth_map:
                 args.append("--no_depth_map")
+
+            # Debug print
+            self.log_signal.emit("ARGS: " + " ".join(args))
 
             process = subprocess.Popen(
                 args,

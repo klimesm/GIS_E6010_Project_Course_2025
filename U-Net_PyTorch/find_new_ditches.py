@@ -17,8 +17,11 @@ def find_new_ditches(new_layer_path, old_layer_path, output_dir,
 
     os.makedirs(output_dir, exist_ok=True)
 
-    new_dir = os.path.dirname(new_layer_path)
-    old_dir = os.path.dirname(old_layer_path)
+    # new_dir = os.path.dirname(new_layer_path)
+    # old_dir = os.path.dirname(old_layer_path)
+    # If the user provides a directory, use it directly
+    new_dir = new_layer_path
+    old_dir = old_layer_path
 
     output_vector = os.path.join(output_dir, "new_ditches_vectorized.gpkg")
 
@@ -127,7 +130,7 @@ def find_new_ditches(new_layer_path, old_layer_path, output_dir,
         return None
 
     old_gdf = gpd.GeoDataFrame(geometry=old_geoms, crs=new_crs)
-    old_buffer_union = old_gdf.buffer(buffer_distance).unary_union
+    old_buffer_union = old_gdf.buffer(buffer_distance).union_all()
 
     gdf_filtered = gdf[~gdf.intersects(old_buffer_union)]
 
@@ -173,5 +176,4 @@ if __name__ == "__main__":
         buffer_distance=args.buffer,
     )
 
-"python new_ditches.py input_new_rasters\ input_old_rasters\ output --threshold 0.5 --tolerance 2 --buffer 3
-"
+"python new_ditches.py input_new_rasters\ input_old_rasters\ output --threshold 0.5 --tolerance 2 --buffer 3"
