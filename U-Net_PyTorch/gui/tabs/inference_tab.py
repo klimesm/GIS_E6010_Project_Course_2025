@@ -3,7 +3,7 @@ import os
 from PySide6.QtWidgets import (
     QWidget, QPushButton, QLabel, QFileDialog, QLineEdit,
     QVBoxLayout, QHBoxLayout, QCheckBox, QTextEdit,
-    QDoubleSpinBox, QComboBox, QGroupBox
+    QDoubleSpinBox, QComboBox, QGroupBox, QTabWidget, QFormLayout
 )
 from PySide6.QtCore import QSettings
 
@@ -24,12 +24,20 @@ class InferenceTab(QWidget):
 
         main = QVBoxLayout()
 
-        # BASIC SETTINGS
-        basic_box = QGroupBox("Basic settings")
+        # create Tabs
+        tabs = QTabWidget()
+        main.addWidget(tabs)
+
+        # Define basic settings tab
+        basic_tab = QWidget()
         basic = QVBoxLayout()
+        basic_tab.setLayout(basic)
 
         # Python executable
-        basic.addWidget(QLabel("Python executable (conda env):"))
+        self.env_container = QGroupBox("Environment")
+        env = QHBoxLayout()
+        self.env_container.setLayout(env)
+        env.addWidget(QLabel("Python executable:"))
         row = QHBoxLayout()
         self.python_exec = QComboBox()
         self.python_exec.setEditable(True)
@@ -47,99 +55,111 @@ class InferenceTab(QWidget):
         btn = QPushButton("Browse")
         btn.clicked.connect(self.select_python)
         row.addWidget(btn)
-        basic.addLayout(row)
+        env.addLayout(row)
+        basic.addWidget(self.env_container)
+
+        # groupbox for model and data
+        data_group = QGroupBox("Model and Data")
+        form = QFormLayout()
 
         # Model dir
-        basic.addWidget(QLabel("Model directory (contains .ckpt and .yaml pairs):"))
         row = QHBoxLayout()
         self.model_path = QLineEdit(self.settings.value("model_path", ""))
         btn = QPushButton("Browse")
         btn.clicked.connect(self.select_model)
         row.addWidget(self.model_path)
         row.addWidget(btn)
-        basic.addLayout(row)
+        form.addRow("Model directory:",row)
 
         # DEM input dir
-        basic.addWidget(QLabel("Input DEM directory (tif files):"))
+        # basic.addWidget(QLabel("Input DEM directory:"))
         row = QHBoxLayout()
         self.dem_path = QLineEdit(self.settings.value("dem_path", ""))
         btn = QPushButton("Browse")
         btn.clicked.connect(self.select_dem)
         row.addWidget(self.dem_path)
         row.addWidget(btn)
-        basic.addLayout(row)
+        form.addRow("Input DEM directory:",row)
 
         # Output dir
-        basic.addWidget(QLabel("Output directory (will contain generated maps):"))
         row = QHBoxLayout()
         self.out_path = QLineEdit(self.settings.value("out_path", ""))
         btn = QPushButton("Browse")
         btn.clicked.connect(self.select_output)
         row.addWidget(self.out_path)
         row.addWidget(btn)
-        basic.addLayout(row)
+        form.addRow("Output directory:", row)
 
-        basic_box.setLayout(basic)
-        main.addWidget(basic_box)
+        # Add groupbox
+        data_group.setLayout(form)
+        basic.addWidget(data_group)
 
-        # advanced settings
-        self.adv_toggle_btn = QPushButton("Show advanced settings")
-        self.adv_toggle_btn.setCheckable(True)
-        self.adv_toggle_btn.setChecked(False)
-        self.adv_toggle_btn.clicked.connect(self.toggle_advanced)
-        main.addWidget(self.adv_toggle_btn)
+        # Add Basic Tab
+        tabs.addTab(basic_tab, "Basic settings")
 
-        # Container with advanced options (hidden initially)
-        self.adv_container = QGroupBox("Advanced settings")
+        # Create advanced settings tab
+        advanced_tab = QWidget()
         adv = QVBoxLayout()
-        self.adv_container.setLayout(adv)
-        self.adv_container.setVisible(False)
+        advanced_tab.setLayout(adv)
 
-        # threshold
+        # groupbox for maps and threshold
+        maps_group = QGroupBox("Threshold and Output Maps")
+        maps_layout = QFormLayout()
+
+        # Threshold
         row = QHBoxLayout()
-        row.addWidget(QLabel("Binary map threshold:"))
         self.threshold = QDoubleSpinBox()
         self.threshold.setRange(0.0, 1.0)
         self.threshold.setSingleStep(0.05)
         self.threshold.setValue(float(self.settings.value("threshold", 0.3)))
         row.addWidget(self.threshold)
-        adv.addLayout(row)
+        maps_layout.addRow("Binary map threshold:",row)
 
         # probability map
-        self.cb_prob = QCheckBox("Generate probability map")
+        self.cb_prob = QCheckBox()
         self.cb_prob.setChecked(self.settings.value("prob_map", "true") == "true")
-        adv.addWidget(self.cb_prob)
+        maps_layout.addRow("Generate probability map",self.cb_prob)
 
         # binary map
-        self.cb_class = QCheckBox("Generate binary map")
+        self.cb_class = QCheckBox()
         self.cb_class.setChecked(self.settings.value("binary_map", "true") == "true")
-        adv.addWidget(self.cb_class)
+        maps_layout.addRow("Generate binary map",self.cb_class)
 
         # depth map
-        self.cb_depth = QCheckBox("Generate depth map")
+        self.cb_depth = QCheckBox()
         self.cb_depth.setChecked(self.settings.value("depth_map", "true") == "true")
-        adv.addWidget(self.cb_depth)
+        maps_layout.addRow("Generate depth map",self.cb_depth)
+
+        # Add maps groupbox
+        maps_group.setLayout(maps_layout)
+        adv.addWidget(maps_group)
+
+        # groupbox for device
+        device_group = QGroupBox("Computation device")
+        device_layout = QFormLayout()
 
         # Device selection
-        adv.addWidget(QLabel("Device:"))
         row = QHBoxLayout()
         self.device_box = QComboBox()
         self.device_box.addItems(["auto", "cpu", "cuda"])
         self.device_box.setCurrentText(self.settings.value("device", "auto"))
         row.addWidget(self.device_box)
-        row.addStretch()
-        adv.addLayout(row)
+        device_layout.addRow("Device:",row)
 
-        self.adv_container.setLayout(adv)
-        main.addWidget(self.adv_container)
+        # Add device groupbox
+        device_group.setLayout(device_layout)
+        adv.addWidget(device_group)
 
-        # ==========================
-        # RUN + LOG
-        # ==========================
+        # Add advanced tab
+        tabs.addTab(advanced_tab, "Advanced settings")
+
+        # Run button
         self.run_btn = QPushButton("Run inference")
+        self.run_btn.setStyleSheet("font-weight: bold; padding: 6px;")
         self.run_btn.clicked.connect(self.run_prediction)
         main.addWidget(self.run_btn)
 
+        # Log
         self.log = QTextEdit()
         self.log.setReadOnly(True)
         self.log.setStyleSheet("background:#000; color:#0f0; font-family:Consolas;")
@@ -147,20 +167,9 @@ class InferenceTab(QWidget):
 
         self.setLayout(main)
 
-    # -----------------------------
-    # Toggle advanced settings
-    # -----------------------------
-    def toggle_advanced(self):
-        visible = self.adv_toggle_btn.isChecked()
-        self.adv_container.setVisible(visible)
-        self.adv_toggle_btn.setText(
-            "Hide advanced settings" if visible else "Show advanced settings"
-        )
-
-    # -----------------------------
     # Save settings
-    # -----------------------------
     def save(self):
+        # basic
         self.settings.setValue("python_exec", self.python_exec.currentText())
         self.settings.setValue("model_path", self.model_path.text())
         self.settings.setValue("dem_path", self.dem_path.text())
@@ -173,9 +182,8 @@ class InferenceTab(QWidget):
         self.settings.setValue("depth_map", "true" if self.cb_depth.isChecked() else "false")
         self.settings.setValue("device", self.device_box.currentText())
 
-    # -----------------------------
+
     # File selection
-    # -----------------------------
     def select_python(self):
         file, _ = QFileDialog.getOpenFileName(self, "Select python executable", "", "Python (python*)")
         if file:
@@ -200,16 +208,13 @@ class InferenceTab(QWidget):
             self.out_path.setText(folder)
             self.save()
 
-    # -----------------------------
     # Logging
-    # -----------------------------
     def log_write(self, text):
         self.log.append(text)
         self.log.ensureCursorVisible()
 
-    # -----------------------------
+
     # Run inference
-    # -----------------------------
     def run_prediction(self):
         self.save()
 
@@ -231,7 +236,7 @@ class InferenceTab(QWidget):
         self.set_enabled(False)
         self.log_write("Running backend...\n")
 
-        # Instantiate worker with arguments matching InferenceConfig
+        # worker with arguments matching InferenceConfig
         self.worker = InferenceWorker(
             python_exec=self.python_exec.currentText(),
             script=self.backend_script_path,

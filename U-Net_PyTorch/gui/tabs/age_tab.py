@@ -27,10 +27,10 @@ class AgeDeterminationTab(QWidget):
 
         # Python executable selector
         self.env_container = QGroupBox("Environment")
-        env = QVBoxLayout()
+        env = QHBoxLayout()
         self.env_container.setLayout(env)
 
-        env.addWidget(QLabel("Python executable (conda env):"))
+        env.addWidget(QLabel("Python executable:"))
         row = QHBoxLayout()
 
         self.python_exec = QComboBox()
@@ -80,16 +80,14 @@ class AgeDeterminationTab(QWidget):
         self.methods_tabs.setCurrentIndex(last_index)
         self.methods_tabs.currentChanged.connect(self._on_tab_changed)
 
-    # --------------------------
-    # Build VECTORS sub-tab
-    # --------------------------
+    # vector-based sub-tab
     def _build_vectors_tab(self):
         self.vectors_widget = QWidget()
         layout = QVBoxLayout(self.vectors_widget)
 
         # probability map
         row = QHBoxLayout()
-        row.addWidget(QLabel("Probability map (.tif):"))
+        row.addWidget(QLabel("Probability map:"))
         self.prob_map_le = QLineEdit(self.settings.value("age_prob_map", ""))
         row.addWidget(self.prob_map_le)
         btn = QPushButton("Browse")
@@ -97,21 +95,12 @@ class AgeDeterminationTab(QWidget):
         row.addWidget(btn)
         layout.addLayout(row)
 
-        # # vector layers table
-        # layout.addWidget(QLabel("Vector layers (Year | File | Layer)"))
-        # self.vec_table = QTableWidget(0, 3)
-        # self.vec_table.setHorizontalHeaderLabels(["Year", "File", "Layer"])
-        # self.vec_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        # layout.addWidget(self.vec_table)
+        # vector layers table
         self.vec_table = QTableWidget(0, 4)
         self.vec_table.setHorizontalHeaderLabels(["Year", "File", "", "Layer"])
         self.vec_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.vec_table.setColumnWidth(2, 90)  # column for Browse button
         layout.addWidget(self.vec_table)
-        # self.vec_table = QTableWidget(0, 4)
-        # self.vec_table.setHorizontalHeaderLabels(["Year", "File", "", "Layer"])  # 3rd is browse
-        # self.vec_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        # self.vec_table.setColumnWidth(2, 90)  # browse button column
 
         # add/remove buttons
         row = QHBoxLayout()
@@ -136,7 +125,7 @@ class AgeDeterminationTab(QWidget):
 
         # thresholds
         thr_row = QHBoxLayout()
-        thr_row.addWidget(QLabel("Prob threshold:"))
+        thr_row.addWidget(QLabel("Probability threshold:"))
         self.vec_prob_thr = QDoubleSpinBox()
         self.vec_prob_thr.setRange(0.0, 1.0)
         self.vec_prob_thr.setSingleStep(0.05)
@@ -152,15 +141,14 @@ class AgeDeterminationTab(QWidget):
 
         self.methods_tabs.addTab(self.vectors_widget, "Vector-based")
 
-    # --------------------------
-    # Build RASTERS sub-tab
-    # --------------------------
+
+    # raster-based sub-tab
     def _build_rasters_tab(self):
         self.rasters_widget = QWidget()
         layout = QVBoxLayout(self.rasters_widget)
 
         row = QHBoxLayout()
-        row.addWidget(QLabel("New layer (dir with .tif):"))
+        row.addWidget(QLabel("New DEM directory:"))
         self.r_new_le = QLineEdit(self.settings.value("age_r_new", ""))
         row.addWidget(self.r_new_le)
         btn = QPushButton("Browse")
@@ -169,7 +157,7 @@ class AgeDeterminationTab(QWidget):
         layout.addLayout(row)
 
         row = QHBoxLayout()
-        row.addWidget(QLabel("Old layer (dir with .tif):"))
+        row.addWidget(QLabel("Old DEM directory:"))
         self.r_old_le = QLineEdit(self.settings.value("age_r_old", ""))
         row.addWidget(self.r_old_le)
         btn = QPushButton("Browse")
@@ -207,18 +195,15 @@ class AgeDeterminationTab(QWidget):
         params_row.addWidget(self.r_buffer)
 
         layout.addLayout(params_row)
-        self.methods_tabs.addTab(self.rasters_widget, "New ditches")
+        self.methods_tabs.addTab(self.rasters_widget, "Raster-based")
 
-    # --------------------------
+
     # Tab change
-    # --------------------------
     def _on_tab_changed(self, idx):
         self.settings.setValue("age_method_tab_index", idx)
 
-    # --------------------------
-    # Vector-table helpers
-    # --------------------------
 
+    # Vector-table helpers
     def remove_selected_vec_rows(self):
         sel = self.vec_table.selectionModel().selectedRows()
         for index in sorted([s.row() for s in sel], reverse=True):
@@ -244,7 +229,6 @@ class AgeDeterminationTab(QWidget):
             year = self.vec_table.item(r, 0).text() if self.vec_table.item(r, 0) else ""
             path = self.vec_table.item(r, 1).text() if self.vec_table.item(r, 1) else ""
             layer = self.vec_table.item(r, 3).text() if self.vec_table.item(r, 3) else ""
-            # layer = self.vec_table.item(r, 3).text().strip() if self.vec_table.item(r, 3) else ""
 
             rows.append(f"{year}|{path}|{layer}")
         self.settings.setValue("age_vec_table", ";".join(rows))
@@ -278,9 +262,7 @@ class AgeDeterminationTab(QWidget):
             else:
                 self.vec_table.item(row, 1).setText(path)
 
-    # --------------------------
     # File selectors
-    # --------------------------
     def select_python(self):
         file, _ = QFileDialog.getOpenFileName(self, "Select python executable", "", "Python (python*)")
         if file:
@@ -317,16 +299,12 @@ class AgeDeterminationTab(QWidget):
             self.r_out_le.setText(d)
             self.settings.setValue("age_r_out", d)
 
-    # --------------------------
-    # Logging
-    # --------------------------
+    # Log
     def log_write(self, text):
         self.log.append(text)
         self.log.ensureCursorVisible()
 
-    # --------------------------
     # Run method
-    # --------------------------
     def run_age(self):
         # Save some settings
         self.settings.setValue("age_python_exec", self.python_exec.currentText())
@@ -353,7 +331,6 @@ class AgeDeterminationTab(QWidget):
             for r in range(self.vec_table.rowCount()):
                 year = self.vec_table.item(r, 0).text().strip() if self.vec_table.item(r, 0) else ""
                 path = self.vec_table.item(r, 1).text().strip() if self.vec_table.item(r, 1) else ""
-                # layer = self.vec_table.item(r, 2).text().strip() if self.vec_table.item(r, 2) else ""
                 layer = self.vec_table.item(r, 3).text().strip() if self.vec_table.item(r, 3) else ""
 
                 if not year or not path or not layer:
@@ -383,7 +360,6 @@ class AgeDeterminationTab(QWidget):
             method = "vectors"
 
         else:
-            # RASTERS
             new_dir = self.r_new_le.text().strip()
             old_dir = self.r_old_le.text().strip()
             out_dir = self.r_out_le.text().strip()

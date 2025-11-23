@@ -12,7 +12,7 @@ class MainWindow(QWidget):
 
         self.setWindowTitle("DitchNet – GUI")
         self.setFixedWidth(650)
-        self.resize(650, 800)
+        # self.resize(650, 800)
 
         layout = QVBoxLayout(self)
         self.tabs = QTabWidget()
