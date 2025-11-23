@@ -5,6 +5,11 @@ def add_training_args(parser):
     group.add_argument("label_dir", help="Path to directory containing label images.")
     group.add_argument("max_epochs", type=int, help="Maximum number of training epochs to run.")
 
+    group.add_argument("--ckpt_path",
+                       default=None,
+                       help="Optional path to a checkpoint for resuming training or fine-tuning. "
+                            "By default, training starts from scratch.")
+
     group.add_argument("--val_size",
                        type=float,
                        default=0.2,

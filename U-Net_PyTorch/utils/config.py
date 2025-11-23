@@ -113,6 +113,7 @@ class TrainConfig:
     feature_dir: Path
     label_dir: Path
     max_epochs: int
+    ckpt_path: Path = None
     val_size: float = 0.2
     batch_size: int = 4
     num_workers: int = 0
@@ -173,9 +174,6 @@ class InferenceConfig:
     probability, binary, and/or depth maps from DEM data.
 
     Args:
-        encoder_name: Encoder backbone used during training.
-        in_channels: Number of input channels used during training.
-
         model_dir: Directory containing one or more trained model checkpoints.
         input_dem_dir: Directory containing raw DEM tiles to process.
         output_dir: Directory where all inference outputs are written.
@@ -195,6 +193,3 @@ class InferenceConfig:
     output_binary_map: bool = True
     output_depth_map: bool = True
     device: Literal["cpu", "cuda", "auto"] = "auto"
-
-    encoder_name: str = "efficientnet-b4"
-    in_channels: int = 2

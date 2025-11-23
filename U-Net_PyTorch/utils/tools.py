@@ -1,3 +1,6 @@
+import yaml
+from typing import Literal
+
 import numpy as np
 
 from sklearn.preprocessing import MinMaxScaler
@@ -56,5 +59,21 @@ def create_feature_layer(hpmf_array, isi_array, resampled_height, resampled_widt
     # Resize to match target chip resolution (bilinear interpolation)
     feature_array = resize(feature_array, (2, resampled_height, resampled_width),
                            order=1, preserve_range=True, anti_aliasing=False)
-
     return feature_array
+
+
+def fetch_hparams_from_yaml(mode: Literal["test", "inference"], yaml_path):
+    try:
+        with open(yaml_path) as file:
+            hyperparameters = yaml.safe_load(file)
+
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Hyperparameter file not found: {yaml_path}")
+
+    encoder_name, in_channels, pos_weight = (hyperparameters["encoder_name"],
+                                             hyperparameters["in_channels"],
+                                             hyperparameters["pos_weight"])
+    if mode == "inference":
+        return encoder_name, in_channels
+
+    return encoder_name, in_channels, pos_weight

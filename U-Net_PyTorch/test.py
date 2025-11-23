@@ -14,6 +14,7 @@ from albumentations.pytorch import ToTensorV2
 from preprocessing import DitchDataset
 from model import LightningDitchNet
 from utils.config import TestConfig, ModelConfig
+from utils.tools import fetch_hparams_from_yaml
 from utils.cli_args.test_args import add_test_args
 
 
@@ -33,18 +34,9 @@ class Test:
 
         self.logger = CSVLogger(save_dir=Path.cwd() / "lightning_logs", name="test_logs")
 
-    def _init_hyperparameters(self):
-        with open(self.config.hparams_path) as file:
-            hyperparameters = yaml.safe_load(file)
-
-        encoder_name, in_channels, pos_weight = (hyperparameters["encoder_name"],
-                                                 hyperparameters["in_channels"],
-                                                 hyperparameters["pos_weight"])
-
-        return encoder_name, in_channels, pos_weight
-
     def _init_model(self):
-        encoder_name, in_channels, pos_weight = self._init_hyperparameters()
+        encoder_name, in_channels, pos_weight = fetch_hparams_from_yaml(mode="test",
+                                                                        yaml_path=self.config.hparams_path)
 
         model_config = ModelConfig(encoder_name=encoder_name, in_channels=in_channels, pos_weight=pos_weight)
 

@@ -1,6 +1,7 @@
 import argparse
 
 import lightning as L
+import torch
 from torch.utils.data import DataLoader
 from pytorch_lightning.loggers import CSVLogger
 from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
@@ -105,6 +106,18 @@ class Train:
 
         return [checkpoint, early_stop]
 
+    @staticmethod
+    def _is_weights_only_checkpoint(ckpt_path):
+        ckpt = torch.load(ckpt_path, map_location="cpu")
+
+        if "optimizer_states" not in ckpt:
+            print(f'[WARNING] Checkpoint "{ckpt_path}" is weights-only '
+                  f'(no optimizer or scheduler state). Fine-tuning mode enabled.')
+
+            return True
+
+        return False
+
     def run(self):
         # Configure the Lightning trainer and launch training
         trainer = L.Trainer(max_epochs=self.config.max_epochs,
@@ -115,7 +128,20 @@ class Train:
                             logger=self.logger,
                             precision=self.config.compute_precision)
 
+        if self.config.ckpt_path:
+            if self._is_weights_only_checkpoint(self.config.ckpt_path):
+                model = LightningDitchNet(self.config.model_config)
+                state = torch.load(self.config.ckpt_path, map_location="cpu", weights_only=True)
+                model.load_state_dict(state["state_dict"])
+
+                trainer.fit(model,
+                            train_dataloaders=self.train_dataloader,
+                            val_dataloaders=self.validation_dataloader)
+
+                return
+
         trainer.fit(self.model,
+                    ckpt_path=self.config.ckpt_path,
                     train_dataloaders=self.train_dataloader,
                     val_dataloaders=self.validation_dataloader)
 
@@ -142,6 +168,7 @@ class Main:
         train_config = TrainConfig(args.feature_dir,
                                    args.label_dir,
                                    args.max_epochs,
+                                   ckpt_path=args.ckpt_path,
                                    val_size=args.val_size,
                                    batch_size=args.batch_size,
                                    num_workers=args.num_workers,
