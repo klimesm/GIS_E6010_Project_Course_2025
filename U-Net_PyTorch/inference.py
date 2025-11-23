@@ -12,7 +12,8 @@ import rasterio
 from utils.tools import (minmax_normalized_image,
                          create_hpmf_layer,
                          create_isi_layer,
-                         create_feature_layer)
+                         create_feature_layer,
+                         fetch_hparams_from_yaml)
 
 from model import LightningDitchNet
 
@@ -66,13 +67,17 @@ class Predictor:
 
         print("The following models will be used and their predictions will be averaged:")
 
-        model_config = ModelConfig(encoder_name=self.config.encoder_name, in_channels=self.config.in_channels)
-
         # Load each checkpoint, move model to the selected device, store it
         for ckpt_path in model_dir.glob("*.ckpt"):
+            encoder_name, in_channels = fetch_hparams_from_yaml(mode="inference",
+                                                                yaml_path=model_dir / f"{ckpt_path.stem}.yaml")
+
+            model_config = ModelConfig(encoder_name=encoder_name, in_channels=in_channels)
+
             model = LightningDitchNet(model_config)
             checkpoint = torch.load(ckpt_path, map_location="cpu", weights_only=True)
             model.load_state_dict(checkpoint["state_dict"])
+
             self.models.append(model.to(self.device))
 
             print(ckpt_path.name)
@@ -287,9 +292,7 @@ class Predictor:
 class Main:
     def __init__(self):
         args = self._parse_arguments()
-        inference_config = InferenceConfig(encoder_name=args.encoder_name,
-                                           in_channels=args.in_channels,
-                                           model_dir=args.model_dir,
+        inference_config = InferenceConfig(model_dir=args.model_dir,
                                            input_dem_dir=args.input_dem_dir,
                                            output_dir=args.output_dir,
                                            threshold=args.threshold,
