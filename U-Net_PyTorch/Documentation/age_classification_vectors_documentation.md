@@ -22,6 +22,7 @@ Install the external dependencies with:
 This script classifies the age of detected ditches by combining:
 - A probability map raster (e.g., U-Net prediction)
 - Vector datasets from multiple years
+- 
 The workflow:
 1. Binarize and vectorize the probability map
 2. Load vector layers for selected years
