@@ -29,6 +29,7 @@ The workflow:
 3. Compare each raster-derived geometry with vector data
 4. Assign the earliest year where a ditch is detected based on minimum intersection length
 5. Export the final results as a GeoPackage
+   
 This script is designed for datasets such as those from Paituli, where ditch information is available as line features (e.g., virtavesikapea layer).
 
 ---
