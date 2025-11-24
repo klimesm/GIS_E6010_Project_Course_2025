@@ -6,6 +6,18 @@ The script binarizes and vectorizes the probability raster, intersects the resul
 
 ---
 
+## Requirements
+This script uses the following libraries:
+- geopandas
+- rasterio
+- shapely
+- numpy
+- pandas
+- argparse (built-in)
+
+Install the external dependencies with:
+`pip install geopandas rasterio shapely numpy pandas`
+
 ## Features
 This script classifies the age of detected ditches by combining:
 - A probability map raster (e.g., U-Net prediction)
@@ -62,6 +74,26 @@ Loads vector layers while:
 - Ensuring all vectors share the same CRS as the raster
 - Returns a dictionary: `{year: GeoDataFrame}`
 
+`find_first_appearance(probability_gdf, vector_data, min_overlap_length)`
+Determines the earliest year a ditch appears by:
+- Comparing each raster geometry with vector layers
+- Using spatial indexing for speed
+- Evaluating real geometric intersections
+- Summing the intersection lengths
+- Assigning the first year where the minimum length requirement is met
+Adds column:
+`first_appearance_year`
 
+`parse_vector_layers(vector_layers_str)`
+Parses input strings into a dictionary.
+Expected format:
+`"2005:path/to.gpkg,layername;2014:path/to.gpkg,layername"`
+
+---
+
+## Output
+The script produces a **GeoPackage** (.gpkg) containing:
+- Vectorized geometries from the probability map
+- Attribute: **first_appearance_year**
 
 
