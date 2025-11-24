@@ -1,6 +1,6 @@
 # `model.py` — LightningDitchNet Segmentation Model
 
-`model.py` defines **DitchNet**, a PyTorch Lightning–based U-Net segmentation model used to predict ditch probability maps from 2-channel input features (HPMF + ISI).  
+`model.py` defines `LightningDitchNet`, a PyTorch Lightning–based U-Net segmentation model used to predict ditch probability maps from 2-channel input features (HPMF + ISI).  
 
 The module includes the model architecture, loss function, evaluation metrics, and optimizer/scheduler configuration.
 

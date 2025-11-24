@@ -1,7 +1,7 @@
 # `preprocessing.py` — Data Preprocessing pipeline for LightningDitchNet
 
 ## Overview
-`preprocessing.py` handles all **data preprocessing and chip generation** steps required for training and testing the LightningDitchNet segmentation model.  
+`preprocessing.py` handles all **data preprocessing and chip generation** steps required for training and testing the `LightningDitchNet` segmentation model.  
 It converts large digital elevation model (DEM) rasters and vector ditch data into small, standardized feature–label pairs (chips) suitable for model input.
 
 ---

@@ -1,7 +1,7 @@
 # `inference.py` — Inference Pipeline for LightningDitchNet
 
 ## Overview
-`inference.py` performs inference on DEM tiles using one or more trained LightningDitchNet model checkpoints.
+`inference.py` performs inference on DEM tiles using one or more trained `LightningDitchNet` model checkpoints.
 During inference each model produces a prediction for every tile, and the outputs are averaged to create the final result.
 
 ---
@@ -175,16 +175,16 @@ Provides the command-line interface for running inference.
 ### Arguments
 **Inference Arguments** (via `add_inference_args` in `inference_args.py`)
 
-| Argument          | Type  | Default | Description                                                                                                                                        |
-|-------------------|-------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `model_dir`       | Path  | —       | Directory containing **one or more** trained LightningDitchNet model checkpoints (`.ckpt`) <br/> and corresponding hyperparameter files (`.yaml`). |
-| `input_dem_dir`   | Path  | —       | Directory containing the DEM tiles (`.tif`) to be processed.                                                                                       |
-| `output_dir`      | Path  | —       | Directory where all inference results will be written.                                                                                             |
-| `--threshold`     | float | `0.3`   | Probability threshold used to generate the binary map.                                                                                             |
-| `--no_prob_map`   | flag  | enabled | Disables saving of the probability map output.                                                                                                     |
-| `--no_binary_map` | flag  | enabled | Disables saving of the binary map output.                                                                                                          |
-| `--no_depth_map`  | flag  | enabled | Disables saving of the depth map output.                                                                                                           |
-| `--device`        | str   | `auto`  | Specifies the computation device (`"cpu"` / `"cuda"` or `"auto"`). <br/> `"auto"` selects GPU when available, otherwise CPU.                       |
+| Argument          | Type  | Default | Description                                                                                                                                          |
+|-------------------|-------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `model_dir`       | Path  | —       | Directory containing **one or more** trained `LightningDitchNet model` checkpoints (`.ckpt`) <br/> and corresponding hyperparameter files (`.yaml`). |
+| `input_dem_dir`   | Path  | —       | Directory containing the DEM tiles (`.tif`) to be processed.                                                                                         |
+| `output_dir`      | Path  | —       | Directory where all inference results will be written.                                                                                               |
+| `--threshold`     | float | `0.3`   | Probability threshold used to generate the binary map.                                                                                               |
+| `--no_prob_map`   | flag  | enabled | Disables saving of the probability map output.                                                                                                       |
+| `--no_binary_map` | flag  | enabled | Disables saving of the binary map output.                                                                                                            |
+| `--no_depth_map`  | flag  | enabled | Disables saving of the depth map output.                                                                                                             |
+| `--device`        | str   | `auto`  | Specifies the computation device (`"cpu"` / `"cuda"` or `"auto"`). <br/> `"auto"` selects GPU when available, otherwise CPU.                         |
 
 ---
 
@@ -221,12 +221,12 @@ All predictions completed.
 
 ## Dependencies
 - **GDAL**: builds VRT mosaics that merge tile-based outputs into seamless virtual rasters.
-- **model.py**: defines the DitchNet architecture and enables loading the trained model checkpoint.
+- **model.py**: defines the `LightningDitchNet` architecture and enables loading the trained model checkpoint.
 - **NumPy**: supports array manipulation for feature stacking, masking, and output raster creation.
 - **PyTorch**: runs the trained DitchNet model and handles tensor operations on CPU or GPU.
 - **Rasterio**: used for reading input DEMs, writing GeoTIFF outputs, and managing spatial metadata.
 - **scikit-image**: provides the resize function used for resampling the prediction layer.
 - **utils.py**: generates terrain feature layers (HPMF and ISI) and performs normalization required for inference.
 
-The inference results serve as the final product of the DitchNet workflow and can be directly visualized 
+The inference results serve as the final product of the `LightningDitchNet` workflow and can be directly visualized 
 or used for GIS-based ditch mapping and analysis.

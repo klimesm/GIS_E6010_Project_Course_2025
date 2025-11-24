@@ -1,7 +1,7 @@
 # `test.py` — Evaluation Pipeline for LightningDitchNet
 
 ## Overview
-`test.py` handles the **evaluation process** for the LightningDitchNet segmentation model. It loads a trained model 
+`test.py` handles the **evaluation process** for the `LightningDitchNet` segmentation model. It loads a trained model 
 checkpoint from `train.py`, prepares the test dataset using the same preprocessing and dataset pipeline, 
 and computes validation metrics.
 
@@ -107,7 +107,7 @@ Both **relative** and **absolute** paths are supported for all inputs.
 
 ## Dependencies
 - **Albumentations**: ensures consistent preprocessing during testing.  
-- **model.py**: defines the DitchNet architecture used for evaluation.  
+- **model.py**: defines the `LightningDitchNet` architecture used for evaluation.  
 - **preprocessing.py**: provides `DitchDataset`, which handles feature–label loading.  
 - **PyTorch Lightning**: provides the structured evaluation workflow and logging.  
 - **Segmentation Models PyTorch (smp)**: defines the model architecture and encoder.

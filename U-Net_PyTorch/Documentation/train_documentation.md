@@ -1,7 +1,7 @@
 # `train.py` — Training Pipeline for `LightningDitchNet`
 
 ## Overview
-`train.py` handles the **training process** for the LightningDitchNet segmentation model. It loads the preprocessed 
+`train.py` handles the **training process** for the `LightningDitchNet` segmentation model. It loads the preprocessed 
 feature and label chips produced by `preprocessing.py`, builds the dataset, defines augmentations, 
 and trains the model using PyTorch Lightning.
 
@@ -211,7 +211,7 @@ Both **relative** and **absolute** paths are supported for all inputs.
 
 ## Dependencies
 - **Albumentations**: for data augmentation and preprocessing.
-- **model.py**: defines the DitchNet architecture used for training.
+- **model.py**: defines the `LightningDitchNet` architecture used for training.
 - **preprocessing.py**: provides `DitchDataset`, which handles feature–label loading.
 - **PyTorch Lightning**: for structured training, validation, logging, and checkpointing.
 - **scikit-learn**: used for dataset splitting (`train_test_split`).
