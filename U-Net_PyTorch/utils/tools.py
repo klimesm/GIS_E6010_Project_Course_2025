@@ -63,12 +63,8 @@ def create_feature_layer(hpmf_array, isi_array, resampled_height, resampled_widt
 
 
 def fetch_hparams_from_yaml(mode: Literal["test", "inference"], yaml_path):
-    try:
-        with open(yaml_path) as file:
-            hyperparameters = yaml.safe_load(file)
-
-    except FileNotFoundError:
-        raise FileNotFoundError(f"Hyperparameter file not found: {yaml_path}")
+    with open(yaml_path) as file:
+        hyperparameters = yaml.safe_load(file)
 
     encoder_name, in_channels, pos_weight = (hyperparameters["encoder_name"],
                                              hyperparameters["in_channels"],
