@@ -26,7 +26,9 @@ The repository contains the following key files and modules:
 - preprocessing.py
 - test.py
 - train.py
-- ..CORRECT THESE
+- utils/tools.py
+- utils/config.py
+- utils/cli_args
 
 **Example Usage**
 
