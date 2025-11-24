@@ -37,15 +37,15 @@ class InferenceWorker(QThread):
     def run(self):
         try:
 
-            # DUMMY VALUES – backend si reálné načte sám z YAML
-            encoder_name = "auto"
-            in_channels = "2"
+            # DUMMY VALUES
+            # encoder_name = "auto"
+            # in_channels = "2"
 
             args = [
                 self.python_exec,
                 self.script,
-                encoder_name,
-                in_channels,
+                # encoder_name,
+                # in_channels,
                 self.model_dir,
                 self.input_dem_dir,
                 self.output_dir,

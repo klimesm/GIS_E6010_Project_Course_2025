@@ -20,7 +20,7 @@ class InferenceTab(QWidget):
             os.path.join(os.path.dirname(__file__), "..", "..", "inference.py")
         )
 
-        self.settings = QSettings("DitchNet", "GUI")
+        self.settings = QSettings("DEM2Ditch", "GUI")
 
         main = QVBoxLayout()
 
@@ -72,7 +72,6 @@ class InferenceTab(QWidget):
         form.addRow("Model directory:",row)
 
         # DEM input dir
-        # basic.addWidget(QLabel("Input DEM directory:"))
         row = QHBoxLayout()
         self.dem_path = QLineEdit(self.settings.value("dem_path", ""))
         btn = QPushButton("Browse")
