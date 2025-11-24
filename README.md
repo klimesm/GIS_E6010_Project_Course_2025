@@ -15,6 +15,17 @@ This repository includes:
   - Classification using NSL ditch vector datasets
 - A standalone GUI application (PySide6) for running the model and exporting results
 - Documentation files
+
+The repository contains the following key files and modules:
+- __init__.py
+- age_classification_vectors.py
+- ditchnet_pytorch.yml
+- find_new_ditches.py
+- inference.py
+- model.py
+- preprocessing.py
+- test.py
+- train.py
 - ..CORRECT THESE
 
 **Example Usage**
