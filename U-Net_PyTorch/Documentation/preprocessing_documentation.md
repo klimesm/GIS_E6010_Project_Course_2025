@@ -1,4 +1,4 @@
-# `preprocessing.py` — Data Preprocessing pipeline for LightningDitchNet
+# `preprocessing.py` — Data Preprocessing Pipeline for LightningDitchNet
 
 ## Overview
 `preprocessing.py` handles all **data preprocessing and chip generation** steps required for training and testing the `LightningDitchNet` segmentation model.  
