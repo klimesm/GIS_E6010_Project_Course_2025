@@ -1,4 +1,5 @@
 # Conda Environment Setup Guide
+To ensure stable, reproducible, and conflict-free execution of the ditch-detection workflow, this project uses a dedicated Conda environment, which isolates all required packages and guarantees that the GUI and backend scripts run consistently across systems. The following guide describes how to create, activate, and manage the environment.
 
 ## 1. Prerequisites
 
@@ -16,7 +17,7 @@ If the command returns a version number, Conda is installed.
 To create a new Conda environment from an existing YML file, run:
 
 ``` bash
-conda env create -f DEM2Ditch_env.yml
+conda env create -f path/to/DEM2Ditch_env.yml
 ```
 
 ## 3. Activating the Environment
