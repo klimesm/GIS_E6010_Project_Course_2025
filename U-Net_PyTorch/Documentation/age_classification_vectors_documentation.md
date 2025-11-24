@@ -88,6 +88,7 @@ Adds column:
 
 `parse_vector_layers(vector_layers_str)`
 Parses input strings into a dictionary.
+
 Expected format:
 `"2005:path/to.gpkg,layername;2014:path/to.gpkg,layername"`
 
