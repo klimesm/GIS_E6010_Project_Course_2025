@@ -1,11 +1,4 @@
 def add_inference_args(parser):
-    parser.add_argument("encoder_name",
-                        help="Encoder backbone used during training.")
-
-    parser.add_argument("in_channels",
-                        type=int,
-                        help="Number of input channels used during training.")
-
     parser.add_argument("model_dir",
                         help="Directory containing one or more LightningDitchNet model checkpoints (*.ckpt).")
 
