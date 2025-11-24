@@ -1,7 +1,7 @@
-# `preprocessing.py` — Data Preparation for DitchNet
+# `preprocessing.py` — Data Preprocessing Pipeline for LightningDitchNet
 
 ## Overview
-`preprocessing.py` handles all **data preprocessing and chip generation** steps required for training and testing the DitchNet segmentation model.  
+`preprocessing.py` handles all **data preprocessing and chip generation** steps required for training and testing the `LightningDitchNet` segmentation model.  
 It converts large digital elevation model (DEM) rasters and vector ditch data into small, standardized feature–label pairs (chips) suitable for model input.
 
 ---
@@ -30,15 +30,15 @@ This ensures compatibility with the segmentation model’s input shape.
 Responsible for **DEM processing, feature extraction, label creation, and chip generation**.
 
 ### Initialization
+The class is most commonly initialized through the CLI (`Main` class) or via the `DEM2Ditch` application, 
+and its underlying structure is defined using the `PreprocessingConfig` from `config.py` as follows:
+
 ```python
-ChipGenerator(
-    input_dem_dir,        # directory with input DEM tiles (.tif)
-    label_vector_data,    # vector data of ditch lines (.shp or .gpkg)
-    output_dir,           # target directory for generated data
-    mode="train",         # "train" or "test"
-    label_hpmf_threshold=-0.075
-)
+ChipGenerator(config: PreprocessingConfig)
 ```
+
+All configuration attributes are documented in the `Main` section, 
+where each parameter is explained in a table.
 
 ### Main Responsibilities
 - Establishes directory hierarchy for `training_data` or `test_data`.
@@ -65,8 +65,10 @@ Creates a standardized directory layout under the output folder, containing:
 
 <div style="border: 1.5px solid #d3d3d3; border-radius: 6px; padding: 10px;">
 
-⚠️ **IMPORTANT** ⚠️ \
+⚠️ **Coordinate System and Spatial Coverage Requirements** ⚠️
+
 The input label vector data must share the same coordinate reference system (CRS) as the DEM data and fully cover the same spatial extent.  
+
 If the coordinate systems differ or the vector layer does not overlap the DEM tile completely, the label generation and clipping process will fail.
 
 </div>
@@ -88,17 +90,19 @@ The main method controlling the full preprocessing pipeline:
 ---
 
 ## Class: `Main`
-A small command-line interface (CLI) wrapper allowing direct execution of preprocessing from the terminal.
+Provides the command-line interface for running preprocessing.
 
 ### Arguments
-| Argument                 | Type  | Default   | Description                                                         |
-|--------------------------|--------|-----------|---------------------------------------------------------------------|
-| `input_dem_dir`          | Path   | —         | Directory containing the DEM tiles `(.tif)` to be processed.        |
-| `label_vector_data`      | Path   | —         | Vector dataset (e.g., `.shp`, `.gpkg`) containing ditch features.   |
-| `output_dir`             | Path   | —         | Output directory for generated chips.                               |
-| `--mode`                 | str    | `train`   | Determines subdirectory naming (`"train"` or `"test"`).             |
-| `--label_hpmf_threshold` | float  | `-0.075`  | Threshold for ditch pixel selection in the HPMF layer (`≤ value`).  |
+**Preprocessing Arguments** (via `add_preprocessing_args` in `preprocesing_args.py`)
 
+| Argument                 | Type  | Default  | Description                                                         |
+|--------------------------|-------|----------|---------------------------------------------------------------------|
+| `input_dem_dir`          | Path  | —        | Directory containing the DEM tiles `(.tif)` to be processed.        |
+| `label_vector_data`      | Path  | —        | Vector dataset (e.g., `.shp`, `.gpkg`) containing ditch features.   |
+| `output_dir`             | Path  | —        | Output directory for generated chips.                               |
+| `--mode`                 | str   | `train`  | Determines subdirectory naming (`"train"` or `"test"`).             |
+| `--ditch_width`          | float | `1.5`    | Buffer size (meters) applied to ditch vectors                       |
+| `--label_hpmf_threshold` | float | `-0.075` | Threshold for ditch pixel selection in the HPMF layer (`≤ value`).  |
 
 ---
 
@@ -140,6 +144,7 @@ This means you can run the program from any working directory without adjusting 
 Running DitchNet preprocessing on DEM files in: ./input_DEMs
 
 Mode: train
+Ditch label width: 1.5
 Label HPMF threshold: -0.05
 
 Processing: dem_tile_001.tif
