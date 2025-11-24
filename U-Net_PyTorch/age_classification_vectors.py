@@ -9,6 +9,7 @@
 # "path/to/output.gpkg" --prob_threshold 0.5
 #
 # - Ensure each vector entry is formatted as `year:path,layer` and separated by semicolons.
+# - For data from Paituli, use "virtavesikapea" layer
 # - Ensure paths containing spaces are enclosed in quotes.
 # - You can adjust the probability threshold using `--prob_threshold {value}` (default is 0.5).
 # - You can set the minimum overlap length using `--min_overlap_length {value}` (default is 10.0).
