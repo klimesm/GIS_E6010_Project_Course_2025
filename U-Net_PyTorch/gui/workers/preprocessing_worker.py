@@ -1,7 +1,8 @@
 import subprocess
+import os
 from PySide6.QtCore import QThread, Signal
 
-class TestWorker(QThread):
+class PreprocessingWorker(QThread):
     log_signal = Signal(str)
     done_signal = Signal(bool)
 
@@ -15,26 +16,22 @@ class TestWorker(QThread):
                 self.config["python_exec"],
                 self.config["script"],
                 
-                self.config["model_path"],
-                
-                self.config["hparams_path"],
-                
-                self.config["feature_dir"],
-                
-                self.config["label_dir"],
-                
-                "--batch_size", str(self.config["batch_size"]),
-                "--num_workers", str(self.config["num_workers"]),
-                "--compute_precision", self.config["precision"]
+                self.config["input_dem_dir"],
+                self.config["label_vector_data"],
+                self.config["output_dir"],
+
+                "--mode", self.config["mode"],
+                "--ditch_width", str(self.config["ditch_width"]),
+                "--label_hpmf_threshold", str(self.config["label_hpmf_threshold"])
             ]
 
             self.log_signal.emit(f"CMD: {' '.join(cmd)}\n")
 
             process = subprocess.Popen(
-                cmd, 
-                stdout=subprocess.PIPE, 
+                cmd,
+                stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
-                universal_newlines=True, 
+                universal_newlines=True,
                 bufsize=1
             )
 
@@ -45,5 +42,5 @@ class TestWorker(QThread):
             self.done_signal.emit(success)
 
         except Exception as e:
-            self.log_signal.emit(f"Error: {str(e)}")
+            self.log_signal.emit(f"ERROR: {str(e)}")
             self.done_signal.emit(False)
