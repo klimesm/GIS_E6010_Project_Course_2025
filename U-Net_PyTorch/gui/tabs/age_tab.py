@@ -358,7 +358,7 @@ class AgeDeterminationTab(QWidget):
         current = self.methods_tabs.currentIndex()
         python_exec = self.python_exec.currentText() or "python"
 
-        if current == 0:
+        if current == 1:
             # VECTORS
             prob_map = self.prob_map_le.text().strip()
             if not prob_map or not os.path.isfile(prob_map):
