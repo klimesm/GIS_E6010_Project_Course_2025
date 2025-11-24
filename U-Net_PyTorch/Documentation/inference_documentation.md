@@ -1,40 +1,68 @@
-# `inference.py` — Model Inference for DitchNet
+# `inference.py` — Inference Pipeline for LightningDitchNet
 
 ## Overview
-`inference.py` performs inference on DEM tiles using one or more trained DitchNet model checkpoints.
+`inference.py` performs inference on DEM tiles using one or more trained LightningDitchNet model checkpoints.
 During inference each model produces a prediction for every tile, and the outputs are averaged to create the final result.
 
 ---
 
-## Class: `Predictor`
-Encapsulates the full inference workflow, from preprocessing DEM data to generating and saving prediction rasters.
+## Class: `Inference`
+Encapsulates all end-to-end inference logic, including model loading, feature generation, tiling, prediction, and output formatting.
 
 ### Initialization
+The class is most commonly initialized through the CLI (`Main` class) or via the `DEM2Ditch` application, 
+and its underlying structure is defined using the `InferenceConfig` from `config.py` as follows:
+
 ```python
-Predictor(
-    model_dir,                # directory containing one or more .ckpt files
-    input_dem_dir,            # directory containing DEM tiles (.tif)
-    output_dir,               # output directory for prediction results
-    threshold=0.3,
-    output_prob_map=True,
-    output_binary_map=True,
-    output_depth_map=True,
-    device="auto"
-)
+Inference(config: InferenceConfig)
 ```
 
+All configuration attributes are documented in the `Main` section, 
+where each parameter is explained in a table.
+
 ### Main Responsibilities
-- Loads all model checkpoints from the model directory.
+- Loads all model checkpoints and corresponding hyperparameters from the model directory.
 - Moves each model to the selected device (CPU/GPU).
 - Generates the required feature layers (HPMF, ISI).
 - Performs inference on 512×512 feature chips.
 - Averages predictions from all models.
 - Writes probability, binary, and depth rasters.
 - Creates VRT mosaics for each enabled output type.
+- Removes temporary files created during processing
 
 ---
 
 ### Methods
+
+#### `_init_device()`
+Determines the computation device:
+- If `device="auto"`, selects `cuda` when available, otherwise `cpu`.
+- Otherwise, returns the user-specified device.
+
+#### `_init_models()`
+Initializes all selected model checkpoints:
+- Ensures that the directory contains at least one `.ckpt` file
+- For each checkpoint:
+  - Loads necessary model hyperparameters (`encoder_name`, `in_channels`) using `fetch_hparams_from_yaml(mode="inference")`
+  - Constructs a `ModelConfig`
+  - Initializes a new `LightningDitchNet` model
+  - Moves the model to the selected device
+  - Sets evaluation mode
+- Stores all models for later ensemble prediction
+
+This enables **multi-model averaging** by default.
+
+<div style="border: 1.5px solid #d3d3d3; border-radius: 6px; padding: 10px;">
+
+⚠️ **Note on Model Directory Requirements** ⚠️
+
+The model directory must contain, in addition to the checkpoint files, a matching `.yaml` hyperparameter file for each checkpoint.
+
+Each `.yaml` file must share the exact same filename prefix as its corresponding `.ckpt` file (e.g., `model_01.ckpt` → `model_01.yaml`).
+
+These `.yaml` files are required for reconstructing the model configuration during inference.
+
+</div>
 
 #### `_set_output_directories()` and `_set_temporary_directories()`:
 Creates a standardized directory layout for inference results. 
@@ -93,12 +121,12 @@ binary, and/or depth outputs:
 Creates VRT mosaic files for all output types that were enabled.
 For each map category (probability, binary, depth), the method:
 
-- Collects all .tif files in the corresponding output directory.
+- Collects all `.tif` files in the corresponding output directory.
 - Builds a GDAL VRT mosaic that references these rasters without duplicating data.
 - Saves the VRT using a standardized filename:
-  - ditch_probability_map.vrt
-  - ditch_binary_map.vrt
-  - ditch_hpmf_depth_map.vrt
+  - `ditch_probability_map.vrt`
+  - `ditch_binary_map.vrt`
+  - `ditch_hpmf_depth_map.vrt`
 
 These mosaics allow all tile-based outputs to be viewed as seamless layers in GIS software.
 
@@ -119,22 +147,22 @@ After running inference, the script produces the following directory structure i
 
 ```
 output_dir/
-├── probability_maps/        (if enabled)
+├── probability_maps/ (if enabled)
 │   ├── dem_tile_001_ditch_probability.tif
 │   ├── dem_tile_002_ditch_probability.tif
 │   └── ...
 │
-├── binary_maps/             (if enabled)
+├── binary_maps/ (if enabled)
 │   ├── dem_tile_001_ditch_binary.tif
 │   ├── dem_tile_002_ditch_binary.tif
 │   └── ...
 │
-├── depth_maps/              (if enabled)
+├── depth_maps/ (if enabled)
 │   ├── dem_tile_001_ditch_depth.tif
 │   ├── dem_tile_002_ditch_depth.tif
 │   └── ...
 │
-└── temp/                    (removed automatically after processing)
+└── temp/ (removed automatically after processing)
     ├── hpmf_temp.tif
     └── isi_temp.tif
 ```
@@ -142,19 +170,21 @@ output_dir/
 ---
 
 ## Class: `Main`
-Provides a **command-line interface (CLI)** for running model inference directly from the terminal.
+Provides the command-line interface for running inference.
 
 ### Arguments
-| Argument          | Type                         | Default | Description                                                                          |
-|-------------------|------------------------------|---------|--------------------------------------------------------------------------------------|
-| `model_dir`       | Path                         | —       | Directory containing **one or more** trained DitchNet model checkpoints (`*.ckpt`).  |
-| `input_dem_dir`   | Path                         | —       | Directory containing the DEM tiles (`.tif`) to be processed.                         |
-| `output_dir`      | Path                         | —       | Directory where all inference results will be written.                               |
-| `--threshold`     | float                        | `0.3`   | Probability threshold used to generate the binary map.                               |
-| `--no_prob_map`   | flag                         | enabled | Disables saving of the probability map output.                                       |
-| `--no_binary_map` | flag                         | enabled | Disables saving of the binary map output.                                |
-| `--no_depth_map`  | flag                         | enabled | Disables saving of the depth map output.                                             |
-| `--device`        | str (`cpu` / `cuda` / `auto`) | `auto`  | Specifies the computation device. `"auto"` selects GPU when available, otherwise CPU. |
+**Inference Arguments** (via `add_inference_args` in `inference_args.py`)
+
+| Argument          | Type  | Default | Description                                                                                                                                        |
+|-------------------|-------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `model_dir`       | Path  | —       | Directory containing **one or more** trained LightningDitchNet model checkpoints (`.ckpt`) <br/> and corresponding hyperparameter files (`.yaml`). |
+| `input_dem_dir`   | Path  | —       | Directory containing the DEM tiles (`.tif`) to be processed.                                                                                       |
+| `output_dir`      | Path  | —       | Directory where all inference results will be written.                                                                                             |
+| `--threshold`     | float | `0.3`   | Probability threshold used to generate the binary map.                                                                                             |
+| `--no_prob_map`   | flag  | enabled | Disables saving of the probability map output.                                                                                                     |
+| `--no_binary_map` | flag  | enabled | Disables saving of the binary map output.                                                                                                          |
+| `--no_depth_map`  | flag  | enabled | Disables saving of the depth map output.                                                                                                           |
+| `--device`        | str   | `auto`  | Specifies the computation device (`"cpu"` / `"cuda"` or `"auto"`). <br/> `"auto"` selects GPU when available, otherwise CPU.                       |
 
 ---
 
@@ -163,8 +193,7 @@ Provides a **command-line interface (CLI)** for running model inference directly
 python inference.py   ./models/   ./input_DEMs   ./inference_output --threshold 0.1
 ```
 
-Both **relative** and **absolute** paths are supported for all input and output arguments.  
-This means you can run the program from any working directory without adjusting its internal path handling.
+Both **relative** and **absolute** paths are supported for all input and output arguments.
 
 ### Example Output (Console)
 ```

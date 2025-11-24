@@ -24,7 +24,7 @@ from osgeo import gdal
 gdal.UseExceptions()
 
 
-class Predictor:
+class Inference:
     def __init__(self, config: InferenceConfig):
         self.config = config
 
@@ -301,7 +301,7 @@ class Main:
                                            output_depth_map=args.output_depth_map,
                                            device=args.device)
 
-        self.predictor = Predictor(inference_config)
+        self.predictor = Inference(inference_config)
         self.run()
 
     @staticmethod

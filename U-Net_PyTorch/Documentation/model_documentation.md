@@ -1,4 +1,4 @@
-# `model.py` — DitchNet Segmentation Model
+# `model.py` — LightningDitchNet Segmentation Model
 
 `model.py` defines **DitchNet**, a PyTorch Lightning–based U-Net segmentation model used to predict ditch probability maps from 2-channel input features (HPMF + ISI).  
 
@@ -6,16 +6,24 @@ The module includes the model architecture, loss function, evaluation metrics, a
 
 ---
 
-## Class: `DitchNet`
+## Class: `LightningDitchNet`
 
 ### Overview  
 A LightningModule wrapping a **U-Net** architecture from `segmentation_models_pytorch`.  
 Designed for binary semantic segmentation with strong class imbalance.
 
 ### Initialization  
-`__init__(encoder_name="efficientnet-b4", pos_weight=3.0, lr=1e-4, in_channels=2)`
+The class is most commonly initialized through the training pipeline (`train.py`), 
+and its structure is defined using the `ModelConfig` from `config.py` as follows:”
 
-The constructor:
+```python
+LightningDitchNet(config: ModelConfig)
+```
+
+All configuration attributes are documented in the `Main` section of the `train_documentation.md`, 
+where each parameter is explained in the **"Model Arguments"** and **"Scheduler Arguments"** tables.
+
+During initialization, the class:
 
 - Builds a U-Net with the specified encoder. 
 - Sets the number of input channels.
@@ -23,8 +31,7 @@ The constructor:
 - Registers common binary classification metrics:  
   - Accuracy 
   - Recall 
-  - Precision 
-  - F1-score 
+  - Precision
   - Matthews Correlation Coefficient (MCC) 
   - Confusion-matrix stats  
 - Stores hyperparameters for checkpointing and reproducibility.
@@ -34,20 +41,20 @@ The constructor:
 ### Methods
 
 ### `forward(x)`
-Runs a forward pass through the U-Net model and returns raw logits.  
-Used during training, validation, testing, and inference.
+- Runs a forward pass through the U-Net model and returns raw logits.  
+- Used during training, validation, testing, and inference.
 
 ---
 
 ### `_shared_step(batch, stage)`
 Shared computation used by all training phases. The method:
 
-- receives a batch `(features, labels)`  
-- computes logits and sigmoid probabilities  
-- calculates weighted BCE loss  
-- computes accuracy, recall, precision, F1-score, and MCC  
-- logs loss and metrics under phase-prefixed names (`train_*`, `val_*`, `test_*`)  
-- logs confusion-matrix components (TP, FP, TN, FN) for validation and test  
+- Receives a batch `(features, labels)`.  
+- Computes logits and sigmoid probabilities.
+- Calculates weighted BCE loss.
+- Computes accuracy, recall, precision, and MCC.
+- Logs loss and metrics under phase-prefixed names (`train_*`, `val_*`, `test_*`).
+- Logs confusion-matrix components (TP, FP, TN, FN) for validation and test.
 - Returns the loss value.
 
 ---
@@ -64,12 +71,21 @@ Runs the shared step in **test** mode and logs test metrics.
 ---
 
 ### `configure_optimizers()`
-Defines optimization strategy:
-
-- **AdamW** optimizer with weight decay.  
-- **ReduceLROnPlateau** scheduler that halves the learning rate when validation loss stops improving. 
-
-Lightning receives both optimizer and scheduler in the expected dictionary format.
+Defines the training optimization strategy.
+- Uses AdamW with weight decay for stability.
+- If `use_scheduler=False` (from `ModelConfig`), returns only the optimizer.
+- If the scheduler is enabled:
+  - Configures a **ReduceLROnPlateau** scheduler.
+  - Monitors the metric defined in `scheduler_monitor`.
+  - Allows the learning rate to decrease automatically when progress plateaus.
+  - Supports customizable:
+    - mode (`min` or `max`)
+    - factor
+    - patience
+    - cooldown
+    - minimum learning rate
+    - threshold and threshold mode
+- Returns both the optimizer and scheduler in the Lightning-compatible format.
 
 ---
 
