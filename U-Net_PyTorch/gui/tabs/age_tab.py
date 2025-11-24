@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (
     QWidget, QPushButton, QLabel, QFileDialog, QLineEdit,
     QVBoxLayout, QHBoxLayout, QTextEdit, QGroupBox, QTabWidget,
     QTableWidget, QTableWidgetItem, QHeaderView, QDoubleSpinBox,
-    QSpinBox, QComboBox
+    QSpinBox, QComboBox, QFormLayout
 )
 from PySide6.QtCore import QSettings, Qt
 
@@ -21,7 +21,7 @@ class AgeDeterminationTab(QWidget):
         self.script_vectors = os.path.join(project_root, "age_classification_vectors.py")
         self.script_rasters = os.path.join(project_root, "find_new_ditches.py")
 
-        self.settings = QSettings("DitchNet", "GUI")
+        self.settings = QSettings("DEM2Ditch", "GUI")
 
         main = QVBoxLayout(self)
 
@@ -55,17 +55,22 @@ class AgeDeterminationTab(QWidget):
 
         # Internal tab widget for two methods
         self.methods_tabs = QTabWidget()
-        self._build_vectors_tab()
         self._build_rasters_tab()
+        self._build_vectors_tab()
         main.addWidget(self.methods_tabs)
 
         # Shared run button + log
-        run_row = QHBoxLayout()
+        # Run button
         self.run_btn = QPushButton("Run age determination")
+        self.run_btn.setStyleSheet("font-weight: bold; padding: 6px;")
         self.run_btn.clicked.connect(self.run_age)
-        run_row.addWidget(self.run_btn)
-        run_row.addStretch()
-        main.addLayout(run_row)
+        main.addWidget(self.run_btn)
+        # run_row = QHBoxLayout()
+        # self.run_btn = QPushButton("Run age determination")
+        # self.run_btn.clicked.connect(self.run_age)
+        # run_row.addWidget(self.run_btn)
+        # # run_row.addStretch()
+        # main.addLayout(run_row)
 
         self.log = QTextEdit()
         self.log.setReadOnly(True)
@@ -85,6 +90,11 @@ class AgeDeterminationTab(QWidget):
         self.vectors_widget = QWidget()
         layout = QVBoxLayout(self.vectors_widget)
 
+        # groupbox for data
+        data_group = QGroupBox("Data")
+        data_layout = QVBoxLayout()
+        data_group.setLayout(data_layout)
+
         # probability map
         row = QHBoxLayout()
         row.addWidget(QLabel("Probability map:"))
@@ -93,14 +103,19 @@ class AgeDeterminationTab(QWidget):
         btn = QPushButton("Browse")
         btn.clicked.connect(self.select_prob_map)
         row.addWidget(btn)
-        layout.addLayout(row)
+        data_layout.addLayout(row)
 
         # vector layers table
+        row = QLabel("Ditch vectors info:")
+        data_layout.addWidget(row)
         self.vec_table = QTableWidget(0, 4)
+        self.vec_table.setMaximumHeight(120)
+        self.vec_table.setMinimumHeight(60)
         self.vec_table.setHorizontalHeaderLabels(["Year", "File", "", "Layer"])
         self.vec_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.vec_table.setColumnWidth(2, 90)  # column for Browse button
-        layout.addWidget(self.vec_table)
+        # layout.addWidget(self.vec_table)
+        data_layout.addWidget(self.vec_table)
 
         # add/remove buttons
         row = QHBoxLayout()
@@ -111,7 +126,8 @@ class AgeDeterminationTab(QWidget):
         row.addWidget(add_btn)
         row.addWidget(rem_btn)
         row.addStretch()
-        layout.addLayout(row)
+        # layout.addLayout(row)
+        data_layout.addLayout(row)
 
         # output
         row = QHBoxLayout()
@@ -121,23 +137,35 @@ class AgeDeterminationTab(QWidget):
         out_btn = QPushButton("Browse")
         out_btn.clicked.connect(self.select_vec_output)
         row.addWidget(out_btn)
-        layout.addLayout(row)
+        # layout.addLayout(row)
+        data_layout.addLayout(row)
 
-        # thresholds
-        thr_row = QHBoxLayout()
-        thr_row.addWidget(QLabel("Probability threshold:"))
+        # Add data groupbox
+        layout.addWidget(data_group)
+
+        # parameters groupbox
+        param_group = QGroupBox("Parameters")
+        h = QHBoxLayout()
+
+        # Probability threshold
+        thr_form = QFormLayout()
         self.vec_prob_thr = QDoubleSpinBox()
         self.vec_prob_thr.setRange(0.0, 1.0)
         self.vec_prob_thr.setSingleStep(0.05)
         self.vec_prob_thr.setValue(float(self.settings.value("age_vec_prob_thr", 0.5)))
-        thr_row.addWidget(self.vec_prob_thr)
+        thr_form.addRow("Probability threshold:", self.vec_prob_thr)
+        h.addLayout(thr_form)
 
-        thr_row.addWidget(QLabel("Min overlap length:"))
+        # Min overlap length
+        ovl_form = QFormLayout()
         self.vec_min_overlap = QDoubleSpinBox()
         self.vec_min_overlap.setRange(0.0, 1e6)
         self.vec_min_overlap.setValue(float(self.settings.value("age_vec_min_overlap", 10.0)))
-        thr_row.addWidget(self.vec_min_overlap)
-        layout.addLayout(thr_row)
+        ovl_form.addRow("Min overlap length:", self.vec_min_overlap)
+        h.addLayout(ovl_form)
+
+        param_group.setLayout(h)
+        layout.addWidget(param_group)
 
         self.methods_tabs.addTab(self.vectors_widget, "Vector-based")
 
@@ -147,57 +175,68 @@ class AgeDeterminationTab(QWidget):
         self.rasters_widget = QWidget()
         layout = QVBoxLayout(self.rasters_widget)
 
+        # groupbox for data
+        data_group = QGroupBox("Data")
+        data_layout = QFormLayout()
+
         row = QHBoxLayout()
-        row.addWidget(QLabel("New DEM directory:"))
+        # row.addWidget(QLabel("New DEM directory:"))
         self.r_new_le = QLineEdit(self.settings.value("age_r_new", ""))
         row.addWidget(self.r_new_le)
         btn = QPushButton("Browse")
         btn.clicked.connect(self.select_r_new)
         row.addWidget(btn)
-        layout.addLayout(row)
+        data_layout.addRow("New probability map directory:",row)
 
         row = QHBoxLayout()
-        row.addWidget(QLabel("Old DEM directory:"))
+        # row.addWidget(QLabel("Old DEM directory:"))
         self.r_old_le = QLineEdit(self.settings.value("age_r_old", ""))
         row.addWidget(self.r_old_le)
         btn = QPushButton("Browse")
         btn.clicked.connect(self.select_r_old)
         row.addWidget(btn)
-        layout.addLayout(row)
+        data_layout.addRow("Old probability map directory:", row)
 
         row = QHBoxLayout()
-        row.addWidget(QLabel("Output directory:"))
+        # row.addWidget(QLabel("Output directory:"))
         self.r_out_le = QLineEdit(self.settings.value("age_r_out", ""))
         row.addWidget(self.r_out_le)
         btn = QPushButton("Browse")
         btn.clicked.connect(self.select_r_out)
         row.addWidget(btn)
-        layout.addLayout(row)
+        data_layout.addRow("Output directory:",row)
 
-        params_row = QHBoxLayout()
-        params_row.addWidget(QLabel("Threshold:"))
+        # Add groupbox
+        data_group.setLayout(data_layout)
+        layout.addWidget(data_group)
+
+        # groupbox for parameters
+        parameter_group = QGroupBox("Parameters")
+        parameter_layout = QFormLayout()
+
+        # threshold
         self.r_threshold = QDoubleSpinBox()
         self.r_threshold.setRange(0.0, 1.0)
         self.r_threshold.setSingleStep(0.05)
         self.r_threshold.setValue(float(self.settings.value("age_r_threshold", 0.5)))
-        params_row.addWidget(self.r_threshold)
+        parameter_layout.addRow("Binary map threshold:", self.r_threshold)
 
-        params_row.addWidget(QLabel("Tolerance:"))
+        # tolerance
         self.r_tolerance = QSpinBox()
         self.r_tolerance.setRange(0, 100)
         self.r_tolerance.setValue(int(self.settings.value("age_r_tolerance", 2)))
-        params_row.addWidget(self.r_tolerance)
+        parameter_layout.addRow("Tolerance:", self.r_tolerance)
 
-        params_row.addWidget(QLabel("Buffer (m):"))
+        # buffer
         self.r_buffer = QSpinBox()
         self.r_buffer.setRange(0, 1000)
         self.r_buffer.setValue(int(self.settings.value("age_r_buffer", 3)))
-        params_row.addWidget(self.r_buffer)
+        parameter_layout.addRow("Buffer (m):", self.r_buffer)
 
-        layout.addLayout(params_row)
+        parameter_group.setLayout(parameter_layout)
+        layout.addWidget(parameter_group)
+
         self.methods_tabs.addTab(self.rasters_widget, "Raster-based")
-
-
     # Tab change
     def _on_tab_changed(self, idx):
         self.settings.setValue("age_method_tab_index", idx)
@@ -282,13 +321,13 @@ class AgeDeterminationTab(QWidget):
             self.settings.setValue("age_vec_output", f)
 
     def select_r_new(self):
-        d = QFileDialog.getExistingDirectory(self, "Select new raster directory")
+        d = QFileDialog.getExistingDirectory(self, "Select new probability map directory")
         if d:
             self.r_new_le.setText(d)
             self.settings.setValue("age_r_new", d)
 
     def select_r_old(self):
-        d = QFileDialog.getExistingDirectory(self, "Select old raster directory")
+        d = QFileDialog.getExistingDirectory(self, "Select old probability map directory")
         if d:
             self.r_old_le.setText(d)
             self.settings.setValue("age_r_old", d)

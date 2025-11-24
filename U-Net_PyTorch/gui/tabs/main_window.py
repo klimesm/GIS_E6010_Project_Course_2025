@@ -10,7 +10,7 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("DitchNet – GUI")
+        self.setWindowTitle("DEM2Ditch – GUI")
         self.setFixedWidth(650)
         # self.resize(650, 800)
 
@@ -18,9 +18,9 @@ class MainWindow(QWidget):
         self.tabs = QTabWidget()
 
         self.tabs.addTab(InferenceTab(), "Inference")
-        self.tabs.addTab(TrainingTab(), "Training")
-        self.tabs.addTab(TestTab(), "Testing")
         self.tabs.addTab(AgeDeterminationTab(), "Age determination")
         self.tabs.addTab(PreprocessingTab(), "Preprocessing")
+        self.tabs.addTab(TrainingTab(), "Training")
+        self.tabs.addTab(TestTab(), "Testing")
 
         layout.addWidget(self.tabs)
