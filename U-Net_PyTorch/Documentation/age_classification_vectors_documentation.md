@@ -1,1 +1,200 @@
-Ditch Age Classification Using Topographic Databases
+# `age_classification_vectors.py` — Ditch Age Classification Using Topographic Databases
+
+## Overview
+`age_classification_vectors.py` Classify ditch age by combining a raster probability map with historical line vector datasets.
+The script binarizes and vectorizes the probability raster, intersects the resulting geometries with year-stamped vector layers, and assigns the earliest year where sufficient overlap is detected.
+
+---
+
+## Features
+This script classifies the age of detected ditches by combining:
+- A probability map raster (e.g., U-Net prediction)
+- Vector datasets from multiple years
+The workflow:
+1. Binarize and vectorize the probability map
+2. Load vector layers for selected years
+3. Compare each raster-derived geometry with vector data
+4. Assign the earliest year where a ditch is detected based on minimum intersection length
+5. Export the final results as a GeoPackage
+This script is designed for datasets such as those from Paituli, where ditch information is available as line features (e.g., virtavesikapea layer).
+
+---
+
+## Usage
+Command-line example
+```python
+python age_classification_vectors.py \
+ "path/to/probability_map.tif" \
+ "2005:path/to/vector_2005.gpkg,layer_2005;2014:path/to/vector_2014.gpkg,layer_2014;2020:path/to/vector_2020.gpkg,layer_2020" \
+ "path/to/output.gpkg" \
+ --prob_threshold 0.5 \
+ --min_overlap_length 10
+```
+
+** Argument rules**
+- Each vector entry must follow the format: 'year:path,layer' Entries are separated by semicolons.
+- Paths containing spaces must be enclosed in quotes.
+- For Paituli data, use: 'virtavesikapea' layer.
+
+- Adjustable parameters:
+  --prob_threshold : raster binarization threshold (default 0.5)
+  --min_overlap_length : minimum line intersection length (default 10.0)
+
+
+
+
+
+
+## Class: `DitchDataset`
+A PyTorch Dataset class used in both `train.py` and `test.py` scripts, 
+providing feature and label tensors to the model during training, validation, or testing.
+
+### Attributes
+- **X** (`list[Path]`): Paths to input feature TIFFs.
+- **y** (`list[Path]`): Paths to label TIFFs.
+- **transform** (`albumentations.Compose`): Albumentations pipeline applied jointly to image and mask.
+
+### Behavior
+Each sample pair is:
+- Loaded as a NumPy array (features as `float32`, labels as `uint8`).
+- Channels of feature image are rearranged from `[C, H, W] → [H, W, C]`.
+- The transform is applied consistently to both image and label.
+- The label is binarized (`0`/`1`), cast to `float32`, and reshaped to `[1, H, W]`.
+
+This ensures compatibility with the segmentation model’s input shape.
+
+---
+
+## Class: `ChipGenerator`
+Responsible for **DEM processing, feature extraction, label creation, and chip generation**.
+
+### Initialization
+```python
+ChipGenerator(
+    input_dem_dir,        # directory with input DEM tiles (.tif)
+    label_vector_data,    # vector data of ditch lines (.shp or .gpkg)
+    output_dir,           # target directory for generated data
+    mode="train",         # "train" or "test"
+    label_hpmf_threshold=-0.075
+)
+```
+
+### Main Responsibilities
+- Establishes directory hierarchy for `training_data` or `test_data`.
+- Creates HPMF and ISI feature rasters using `WhiteboxTools`.
+- Rasterizes and filters ditch vector geometries to form binary label rasters.
+- Normalizes all layers and tiles them into `512×512` chips.
+- Removes temporary rasters after processing.
+
+### Methods
+
+#### `_set_directories()`
+Creates a standardized directory layout under the output folder, containing:
+- `training_data/` or `test_data/` — main output directory depending on mode
+- `feature_chips/` — extracted and normalized feature rasters
+- `label_chips/` — generated label rasters
+- `temp/` — intermediate files (removed automatically after processing)
+
+#### `_create_label_layer(dem_path, hpmf_array, resampled_height, resampled_width)`
+- Reads the corresponding DEM’s spatial metadata.
+- Clips vector ditch geometries to DEM extent and buffers them by 1.5 m.
+- Rasterizes buffered geometries and filters pixels using the HPMF threshold (`≤ -0.075` by default).
+- Applies a 3×3 majority filter for smoothing.
+- Resamples to align with model resolution by using nearest-neighbor interpolation.
+
+<div style="border: 1.5px solid #d3d3d3; border-radius: 6px; padding: 10px;">
+
+⚠️ **IMPORTANT** ⚠️ \
+The input label vector data must share the same coordinate reference system (CRS) as the DEM data and fully cover the same spatial extent.  
+If the coordinate systems differ or the vector layer does not overlap the DEM tile completely, the label generation and clipping process will fail.
+
+</div>
+
+#### `_generate_single_chip_pair(...)`
+- Extracts matching `feature_chip` and `label_chip` arrays.
+- Skips chips with < 0.1 % ditch pixels to reduce class imbalance.
+- Saves both as `.tif` files (float32 and uint8 respectively).
+
+#### `generate_chips()`
+The main method controlling the full preprocessing pipeline:
+- Iterates through all DEM files in the input directory.
+- Generates temporary HPMF, ISI, and label rasters.
+- Combines them into normalized two-channel feature arrays.
+- Iteratively tiles the data into `512×512` chips.
+- Removes all temporary files after completion.
+- Reports skipped or invalid DEM inputs.
+
+---
+
+## Class: `Main`
+A small command-line interface (CLI) wrapper allowing direct execution of preprocessing from the terminal.
+
+### Arguments
+| Argument                 | Type  | Default   | Description                                                         |
+|--------------------------|--------|-----------|---------------------------------------------------------------------|
+| `input_dem_dir`          | Path   | —         | Directory containing the DEM tiles `(.tif)` to be processed.        |
+| `label_vector_data`      | Path   | —         | Vector dataset (e.g., `.shp`, `.gpkg`) containing ditch features.   |
+| `output_dir`             | Path   | —         | Output directory for generated chips.                               |
+| `--mode`                 | str    | `train`   | Determines subdirectory naming (`"train"` or `"test"`).             |
+| `--label_hpmf_threshold` | float  | `-0.075`  | Threshold for ditch pixel selection in the HPMF layer (`≤ value`).  |
+
+
+---
+
+## Output
+Depending on the mode, preprocessing produces the following structure:
+
+```
+output_dir/
+└── training_data/ or test_data/
+    ├── feature_chips/
+    │   ├── 0.tif
+    │   ├── 1.tif
+    │   └── ...
+    ├── label_chips/
+    │   ├── 0.tif
+    │   ├── 1.tif
+    │   └── ...
+    └── temp/ (removed automatically after processing)
+        ├── hpmf_temp.tif
+        ├── isi_temp.tif
+        └── label_temp.tif
+```
+
+Each feature chip is a 2-channel raster (HPMF + ISI) normalized to `[0, 1]`,  
+and each label chip is a binary raster (`1` = ditch, `0` = background).
+
+---
+
+## Example Usage
+```bash
+python preprocessing.py   ./input_DEMs   ./ditch_vectors/ditches.gpkg   ./dataset_output   --label_hpmf_threshold -0.05
+```
+
+Both **relative** and **absolute** paths are supported for all input and output arguments.  
+This means you can run the program from any working directory without adjusting its internal path handling.
+
+### Example Output (Console)
+```
+Running DitchNet preprocessing on DEM files in: ./input_DEMs
+
+Mode: train
+Label HPMF threshold: -0.05
+
+Processing: dem_tile_001.tif
+Processing: dem_tile_002.tif
+...
+
+Preprocessing completed.
+```
+
+---
+
+## Dependencies
+- **Albumentations**: for image augmentation and preprocessing in `DitchDataset`.
+- **Rasterio**, **GeoPandas**, **Shapely**: handle raster and vector geospatial data.
+- **scikit-image**, **tifffile**: for reading, writing, and resizing TIFF images.
+- **utils.py**: provides helper functions for normalization and layer creation.
+- **WhiteboxTools**: provides the `majority_filter` operation used for smoothing the label raster.
+
+The output dataset integrates directly with `train.py` and `test.py` for model development.
