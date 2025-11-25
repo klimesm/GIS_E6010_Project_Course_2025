@@ -1,7 +1,7 @@
 # Ditch Detection Project
 
 ## 📄 Description
-This repository contains the code, data pipeline and graphical user interface (GUI) developed for detecting ditches from LiDAR data, estimating ditch age and training the model. The project is based on machine learning with a U-Net model trained on high-resolution DEMs.
+This repository contains the code, data pipeline and graphical user interface (GUI) developed for detecting ditches from LiDAR data, estimating ditch age and training the model. The project is based on machine learning with a U-Net model trained on high-resolution DEMs. The dodumentation is found https://github.com/klimesm/GIS_E6010_Project_Course_2025/tree/pytorch/U-Net_PyTorch/Documentation  
 
 The work was completed as part of the Aalto University course GIS-E6010- Project Course, in collaboration with the Finnish Forest Centre.
 
@@ -15,6 +15,7 @@ This repository includes:
   - Classification using NSL ditch vector datasets
 - A standalone GUI application (PySide6) for running the model and exporting results
 - Documentation files
+  - 
 
 The repository contains the following key files and modules:
 - __init__.py
