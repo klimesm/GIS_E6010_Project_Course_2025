@@ -17,7 +17,7 @@ If the command returns a version number, Conda is installed.
 To create a new Conda environment from an existing YML file, run:
 
 ``` bash
-conda env create -f path/to/DEM2Ditch_env.yml
+conda env create -f path/to/DEM2Ditch_gui.yml
 ```
 
 ## 3. Activating the Environment
@@ -25,7 +25,7 @@ conda env create -f path/to/DEM2Ditch_env.yml
 Activate the environment using:
 
 ``` bash
-conda activate DEM2Ditch_env
+conda activate DEM2Ditch_gui
 ```
 
 ## 4. Deactivating the Environment
@@ -57,5 +57,5 @@ conda install package-name
 To delete an environment, use:
 
 ``` bash
-conda remove -n DEM2Ditch_env --all
+conda remove -n DEM2Ditch_gui --all
 ```

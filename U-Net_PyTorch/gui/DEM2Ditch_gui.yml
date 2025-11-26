@@ -1,4 +1,4 @@
-name: DEM2Ditch_env
+name: DEM2Ditch_gui
 channels:
   - conda-forge
   - defaults
