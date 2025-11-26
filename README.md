@@ -38,7 +38,8 @@ Use GUI how?
 
 **Model Overview**
 
-The ditch detection model is based on U-Net, inspired by the pipeline from Lidberg et al. (2023). The model is based on a CNN architecture, specifically designed for semantic segmentation. The model uses a U-Net architecture with an EfficientNet-B4 encoder. This encoder extracts multi-scale features and captures spatial contexts from the input features: 
+The ditch detection model is based on U-Net, inspired by the pipeline from Lidberg et al. (2023). The model is based on a CNN architecture, specifically designed for semantic segmentation. The model uses a U-Net architecture with an EfficientNet-B4 encoder. This encoder extracts multi-scale features and captures spatial contexts from the two input features derived from DEM: 
+
 1. High-Pass Median Filter (HPMF)
 2. Impoundment Size Index (ISI)
    
@@ -46,11 +47,9 @@ Then the decoder path upsamples these features to generate a pixel-wise probabil
 
 ## Credits and References
 
-As mentioned: This work is heavily inspired by the following study, which provided the foundation for our initial training pipeline:
+As mentioned, this work is heavily inspired by the following study, which provided the foundation for our initial training pipeline:
 
 Lidberg, W., Paul, S. S., Westphal, F., Richter, K. F., Lavesson, N., Melniks, R., Ivanovs, J., Ciesielski, M., Leinonen, A., & Ågren, A. M. (2023). Mapping drainage ditches in forested landscapes using deep learning and aerial laser scanning. https://doi.org/10.1061/JIDEDH.IRENG-9796 
-
-We adapted their training pipeline by changing the encoder and adding an ISI-layer.
 
 ## 👥 Authors
 
