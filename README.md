@@ -42,7 +42,7 @@ The ditch detection model is based on U-Net, inspired by the pipeline from Lidbe
 1. High-Pass Median Filter (HPMF)
 2. Impoundment Size Index (ISI).
    
-Then the decoder path upsamples these features to generate a pixel-wise probability map
+Then the decoder path upsamples these features to generate a pixel-wise probability map.
 
 ## Credits and References
 
