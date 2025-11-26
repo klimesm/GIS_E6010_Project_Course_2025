@@ -54,11 +54,12 @@ Lidberg, W., Paul, S. S., Westphal, F., Richter, K. F., Lavesson, N., Melniks, R
 ## 👥 Authors
 
 This project was developed by:
-Ville Kauppinen, 
-Matěj Klimeš, 
-Nette Poutiainen, 
-Emma Aalto, 
-Janna Lappalainen, 
-Yuhan Nie, 
+
+Ville Kauppinen, <br>
+Matěj Klimeš, <br>
+Nette Poutiainen, <br>
+Emma Aalto, <br>
+Janna Lappalainen, <br>
+Yuhan Nie
 
 Aalto University
