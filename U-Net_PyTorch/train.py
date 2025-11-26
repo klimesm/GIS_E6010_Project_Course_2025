@@ -1,10 +1,10 @@
 import argparse
 
 import lightning as L
+import torch
 from torch.utils.data import DataLoader
 from pytorch_lightning.loggers import CSVLogger
 from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
-import segmentation_models_pytorch as smp
 
 from pathlib import Path
 
@@ -14,40 +14,38 @@ from albumentations.pytorch import ToTensorV2
 from sklearn.model_selection import train_test_split
 
 from preprocessing import DitchDataset
-from model import DitchNet
+from model import LightningDitchNet
+
+from utils.config import TrainConfig, ModelConfig
+from utils.cli_args.training_args import add_training_args
+from utils.cli_args.model_args import add_model_args, add_scheduler_args
 
 L.seed_everything(14, workers=True)
 
 
 class Train:
-    def __init__(self, feature_dir, label_dir, max_epochs,
-                 encoder_name="efficientnet-b4",
-                 pos_weight=3, batch_size=4,
-                 num_workers=0, compute_precision="32-true"):
+    def __init__(self, config: TrainConfig):
+        self.config = config
 
         # Initialize the segmentation model
-        self.model = DitchNet(encoder_name=encoder_name, pos_weight=pos_weight)
-        self.max_epochs = max_epochs
+        self.model = LightningDitchNet(config.model_config)
 
         # Split dataset into training and validation sets
-        self.X_train, self.X_val, self.y_train, self.y_val = self._construct_train_val_sets(feature_dir, label_dir)
+        self.X_train, self.X_val, self.y_train, self.y_val = self._construct_train_val_sets(config.feature_dir,
+                                                                                            config.label_dir)
 
         # Define augmentation and preprocessing pipelines
         self.train_transform, self.val_transform = self._construct_transforms()
 
         # Create PyTorch DataLoaders for training and validation
-        self.train_dataloader, self.validation_dataloader = self._construct_dataloaders(batch_size, num_workers)
+        self.train_dataloader, self.validation_dataloader = self._construct_dataloaders(config.batch_size,
+                                                                                        config.num_workers)
 
         # Initialize logger and callbacks for model tracking and checkpointing
         self.logger = CSVLogger(save_dir=Path.cwd() / "lightning_logs", name="train_logs")
         self.callbacks = self._set_callbacks()
 
-        # Defines the computation precision used by the Trainer
-        # (e.g., '16-mixed' for faster mixed precision or '32-true' for full precision)
-        self.compute_precision = compute_precision
-
-    @staticmethod
-    def _construct_train_val_sets(feature_dir, label_dir):
+    def _construct_train_val_sets(self, feature_dir, label_dir):
         # Resolve and sort all feature and label paths
         X = sorted(Path(feature_dir).resolve().iterdir())
         y = sorted(Path(label_dir).resolve().iterdir())
@@ -55,8 +53,8 @@ class Train:
         if len(X) != len(y):
             raise ValueError("Feature and label directories must contain the same number of files.")
 
-        # Split into training and validation sets (80/20)
-        return train_test_split(X, y, test_size=0.20, random_state=14)
+        # Split into training and validation sets
+        return train_test_split(X, y, test_size=self.config.val_size, random_state=14)
 
     @staticmethod
     def _construct_transforms():
@@ -92,74 +90,112 @@ class Train:
 
         return training_dataloader, validation_dataloader
 
-    @staticmethod
-    def _set_callbacks():
+    def _set_callbacks(self):
         # Save top-performing checkpoints and enable early stopping
-        checkpoint = ModelCheckpoint(save_weights_only=True, save_top_k=10, monitor="val_mcc", mode="max")
-        early_stop = EarlyStopping(patience=50, monitor="val_loss", mode="min")
+        checkpoint = ModelCheckpoint(save_weights_only=self.config.save_weights_only,
+                                     save_top_k=self.config.save_top_k,
+                                     monitor=self.config.checkpoint_monitor,
+                                     mode=self.config.checkpoint_mode)
+
+        if not self.config.use_early_stop:
+            return [checkpoint]
+
+        early_stop = EarlyStopping(patience=self.config.early_stop_patience,
+                                   monitor=self.config.early_stop_monitor,
+                                   mode=self.config.early_stop_mode)
 
         return [checkpoint, early_stop]
 
+    @staticmethod
+    def _is_weights_only_checkpoint(ckpt_path):
+        ckpt = torch.load(ckpt_path, map_location="cpu")
+
+        if "optimizer_states" not in ckpt:
+            print(f'[WARNING] Checkpoint "{ckpt_path}" is weights-only '
+                  f'(no optimizer or scheduler state). Fine-tuning mode enabled.')
+
+            return True
+
+        return False
+
     def run(self):
         # Configure the Lightning trainer and launch training
-        trainer = L.Trainer(max_epochs=self.max_epochs,
+        trainer = L.Trainer(max_epochs=self.config.max_epochs,
                             accelerator="auto",
                             devices="auto",
                             strategy="auto",
                             callbacks=self.callbacks,
                             logger=self.logger,
-                            precision=self.compute_precision)
+                            precision=self.config.compute_precision)
+
+        if self.config.ckpt_path:
+            if self._is_weights_only_checkpoint(self.config.ckpt_path):
+                model = LightningDitchNet(self.config.model_config)
+                state = torch.load(self.config.ckpt_path, map_location="cpu", weights_only=True)
+                model.load_state_dict(state["state_dict"])
+
+                trainer.fit(model,
+                            train_dataloaders=self.train_dataloader,
+                            val_dataloaders=self.validation_dataloader)
+
+                return
 
         trainer.fit(self.model,
+                    ckpt_path=self.config.ckpt_path,
                     train_dataloaders=self.train_dataloader,
                     val_dataloaders=self.validation_dataloader)
 
 
 class Main:
     def __init__(self):
-        self.args = self._parse_arguments()
-        self.trainer = Train(self.args.feature_dir,
-                             self.args.label_dir,
-                             self.args.max_epochs,
-                             encoder_name=self.args.encoder_name,
-                             pos_weight=self.args.pos_weight,
-                             batch_size=self.args.batch_size,
-                             num_workers=self.args.num_workers,
-                             compute_precision=self.args.compute_precision)
+        args = self._parse_arguments()
+        model_config = ModelConfig(encoder_name=args.encoder_name,
+                                   pos_weight=args.pos_weight,
+                                   lr=args.learning_rate,
+                                   in_channels=args.in_channels,
+                                   weight_decay=args.weight_decay,
+
+                                   use_scheduler=args.use_scheduler,
+                                   scheduler_monitor=args.scheduler_monitor,
+                                   scheduler_mode=args.scheduler_mode,
+                                   scheduler_factor=args.scheduler_factor,
+                                   scheduler_patience=args.scheduler_patience,
+                                   scheduler_cooldown=args.scheduler_cooldown,
+                                   scheduler_min_lr=args.scheduler_min_lr,
+                                   scheduler_threshold=args.scheduler_threshold,
+                                   scheduler_threshold_mode=args.scheduler_threshold_mode)
+
+        train_config = TrainConfig(args.feature_dir,
+                                   args.label_dir,
+                                   args.max_epochs,
+                                   ckpt_path=args.ckpt_path,
+                                   val_size=args.val_size,
+                                   batch_size=args.batch_size,
+                                   num_workers=args.num_workers,
+                                   compute_precision=args.compute_precision,
+
+                                   save_weights_only=args.save_weights_only,
+                                   save_top_k=args.save_top_k,
+                                   checkpoint_monitor=args.checkpoint_monitor,
+                                   checkpoint_mode=args.checkpoint_mode,
+
+                                   use_early_stop=args.use_early_stop,
+                                   early_stop_patience=args.early_stop_patience,
+                                   early_stop_monitor=args.early_stop_monitor,
+                                   early_stop_mode=args.early_stop_mode,
+
+                                   model_config=model_config)
+
+        self.trainer = Train(train_config)
         self.run()
 
     @staticmethod
     def _parse_arguments():
-        parser = argparse.ArgumentParser(description="Train the DitchNet segmentation model.")
+        parser = argparse.ArgumentParser(description="Train the LightningDitchNet segmentation model.")
 
-        parser.add_argument("feature_dir", help="Path to directory containing input feature images.")
-        parser.add_argument("label_dir", help="Path to directory containing label (mask) images.")
-
-        parser.add_argument("max_epochs", type=int, help="Maximum number of training epochs to run.")
-
-        parser.add_argument("--encoder_name",
-                            default="efficientnet-b4",
-                            choices=smp.encoders.get_encoder_names(),
-                            help="Encoder backbone for DitchNet. "
-                                 "Choices: https://smp.readthedocs.io/en/latest/encoders.html")
-
-        parser.add_argument("--pos_weight",
-                            type=float, default=3,
-                            help="Weighting factor for positive (ditch) class in the BCE loss to handle imbalance.")
-
-        parser.add_argument("--batch_size", type=int, default=4, help="Batch size for training.")
-        parser.add_argument("--num_workers", type=int, default=0,
-                            help="Number of parallel CPU workers used for loading batches from disk.")
-
-        parser.add_argument("--compute_precision",
-                            choices=["16-true", "16-mixed",
-                                     "bf16-true", "bf16-mixed",
-                                     "32-true", "64-true",
-                                     "64", "32", "16", "bf16"],
-
-                            default="32-true",
-                            help="Computation precision for training. More information: "
-                                 "https://lightning.ai/docs/pytorch/stable/common/precision_basic.html")
+        add_training_args(parser)
+        add_model_args(parser)
+        add_scheduler_args(parser)
 
         return parser.parse_args()
 

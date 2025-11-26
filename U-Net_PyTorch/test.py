@@ -1,6 +1,8 @@
 import argparse
+import yaml
 
 import lightning as L
+import torch
 from torch.utils.data import DataLoader
 from pytorch_lightning.loggers import CSVLogger
 
@@ -10,24 +12,39 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 from preprocessing import DitchDataset
-from model import DitchNet
+from model import LightningDitchNet
+from utils.config import TestConfig, ModelConfig
+from utils.tools import fetch_hparams_from_yaml
+from utils.cli_args.test_args import add_test_args
 
 
 class Test:
-    def __init__(self, model_path, feature_dir, label_dir,
-                 batch_size=4, num_workers=0, compute_precision="32-true"):
+    def __init__(self, config: TestConfig):
+        self.config = config
 
-        self.model = DitchNet.load_from_checkpoint(model_path)
-        self.X_test, self.y_test = self._construct_test_set(feature_dir, label_dir)
+        # Initialize the segmentation model
+        self.model = self._init_model()
+
+        self.X_test, self.y_test = self._construct_test_set(config.feature_dir, config.label_dir)
 
         self.test_transform = A.Compose([ToTensorV2()],
                                         additional_targets={"label": "mask"})
 
-        self.test_dataloader = self._construct_dataloader(batch_size, num_workers)
+        self.test_dataloader = self._construct_dataloader(config.batch_size, config.num_workers)
 
         self.logger = CSVLogger(save_dir=Path.cwd() / "lightning_logs", name="test_logs")
 
-        self.compute_precision = compute_precision
+    def _init_model(self):
+        encoder_name, in_channels, pos_weight = fetch_hparams_from_yaml(mode="test",
+                                                                        yaml_path=self.config.hparams_path)
+
+        model_config = ModelConfig(encoder_name=encoder_name, in_channels=in_channels, pos_weight=pos_weight)
+
+        model = LightningDitchNet(model_config)
+        checkpoint = torch.load(self.config.model_checkpoint_path, map_location="cpu", weights_only=True)
+        model.load_state_dict(checkpoint["state_dict"])
+
+        return model
 
     @staticmethod
     def _construct_test_set(feature_dir, label_dir):
@@ -57,45 +74,29 @@ class Test:
                             devices="auto",
                             strategy="auto",
                             logger=self.logger,
-                            precision=self.compute_precision)
+                            precision=self.config.compute_precision)
 
         trainer.test(self.model, self.test_dataloader)
 
 
 class Main:
     def __init__(self):
-        self.args = self._parse_arguments()
-        self.tester = Test(self.args.model_path,
-                           self.args.feature_dir,
-                           self.args.label_dir,
-                           batch_size=self.args.batch_size,
-                           num_workers=self.args.num_workers,
-                           compute_precision=self.args.compute_precision)
+        args = self._parse_arguments()
+        test_config = TestConfig(args.model_checkpoint_path,
+                                 args.hparams_path,
+                                 args.feature_dir,
+                                 args.label_dir,
+                                 batch_size=args.batch_size,
+                                 num_workers=args.num_workers,
+                                 compute_precision=args.compute_precision)
+
+        self.tester = Test(test_config)
         self.run()
 
     @staticmethod
     def _parse_arguments():
-        parser = argparse.ArgumentParser(description="Test the trained DitchNet segmentation model.")
-
-        parser.add_argument("model_path", help="Path to the trained DitchNet model (.ckpt file).")
-
-        parser.add_argument("feature_dir", help="Path to directory containing input feature images.")
-        parser.add_argument("label_dir", help="Path to directory containing label (mask) images.")
-
-        parser.add_argument("--batch_size", type=int, default=4, help="Batch size for testing.")
-
-        parser.add_argument("--num_workers", type=int, default=0,
-                            help="Number of parallel CPU workers used for loading batches from disk.")
-
-        parser.add_argument("--compute_precision",
-                            choices=["16-true", "16-mixed",
-                                     "bf16-true", "bf16-mixed",
-                                     "32-true", "64-true",
-                                     "64", "32", "16", "bf16"],
-
-                            default="32-true",
-                            help="Computation precision for testing. More information: "
-                                 "https://lightning.ai/docs/pytorch/stable/common/precision_basic.html")
+        parser = argparse.ArgumentParser(description="Test the trained LightningDitchNet segmentation model.")
+        add_test_args(parser)
 
         return parser.parse_args()
 
