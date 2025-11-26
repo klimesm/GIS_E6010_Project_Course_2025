@@ -55,11 +55,11 @@ Lidberg, W., Paul, S. S., Westphal, F., Richter, K. F., Lavesson, N., Melniks, R
 
 This project was developed by:
 
-Ville Kauppinen, <br>
-Matěj Klimeš, <br>
-Nette Poutiainen, <br>
-Emma Aalto, <br>
-Janna Lappalainen, <br>
+Ville Kauppinen <br>
+Matěj Klimeš <br>
+Nette Poutiainen <br>
+Emma Aalto <br>
+Janna Lappalainen <br>
 Yuhan Nie
 
 Aalto University
