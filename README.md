@@ -38,9 +38,10 @@ Use GUI how?
 
 **Model Overview**
 
-The ditch detection model is based on U-Net, inspired by the pipeline from Lidberg et al. (2023). The model is based on a CNN architecture, specifically designed for semantic segmentation. The model uses a U-Net architecture with an Efficient-B4 encoder. This encoder extracts multi-scale features and captures spatial contexts from the input features: 
+The ditch detection model is based on U-Net, inspired by the pipeline from Lidberg et al. (2023). The model is based on a CNN architecture, specifically designed for semantic segmentation. The model uses a U-Net architecture with an EfficientNet-B4 encoder. This encoder extracts multi-scale features and captures spatial contexts from the input features: 
 1. High-Pass Median Filter (HPMF)
 2. Impoundment Size Index (ISI).
+   
 Then the decoder path upsamples these features to generate a pixel-wise probability map
 
 ## Credits and References
