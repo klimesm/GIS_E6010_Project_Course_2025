@@ -36,7 +36,7 @@ class TrainingTab(QWidget):
         btn_browse_py = QPushButton("Browse")
         btn_browse_py.clicked.connect(self.select_python)
         
-        env_layout.addWidget(QLabel("Python Interpreter:"))
+        env_layout.addWidget(QLabel("Python executable:"))
         env_layout.addWidget(self.python_exec)
         env_layout.addWidget(btn_browse_py)
         env_group.setLayout(env_layout)

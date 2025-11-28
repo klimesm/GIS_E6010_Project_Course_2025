@@ -34,12 +34,12 @@ class PreprocessingTab(QWidget):
         btn_browse_py = QPushButton("Browse")
         btn_browse_py.clicked.connect(lambda: self.select_file(self.python_exec, "Python (python.exe)"))
 
-        env_box.addWidget(QLabel("Python Interpreter:"))
+        env_box.addWidget(QLabel("Python executable:"))
         env_box.addWidget(self.python_exec)
         env_box.addWidget(btn_browse_py)
         layout.addLayout(env_box)
 
-        grp_in = QGroupBox("Inputs & Outputs")
+        grp_in = QGroupBox("Data")
         frm_in = QFormLayout()
 
         self.input_dem = QLineEdit(self.settings.value("prep_dem", ""))
@@ -47,21 +47,21 @@ class PreprocessingTab(QWidget):
         btn_dem = QPushButton("Browse")
         btn_dem.clicked.connect(lambda: self.select_dir(self.input_dem))
         row_dem = QHBoxLayout(); row_dem.addWidget(self.input_dem); row_dem.addWidget(btn_dem)
-        frm_in.addRow("Input DEM Dir (.tif):", row_dem)
+        frm_in.addRow("Input DEM directory:", row_dem)
 
         self.label_vec = QLineEdit(self.settings.value("prep_vec", ""))
         self.label_vec.setToolTip("Vector dataset containing labeled ditch features (e.g., .shp, .gpkg).")
         btn_vec = QPushButton("Browse")
         btn_vec.clicked.connect(lambda: self.select_file(self.label_vec, "Vector (*.shp *.gpkg)"))
         row_vec = QHBoxLayout(); row_vec.addWidget(self.label_vec); row_vec.addWidget(btn_vec)
-        frm_in.addRow("Label Vector Data:", row_vec)
+        frm_in.addRow("Label vector data:", row_vec)
 
         self.out_dir = QLineEdit(self.settings.value("prep_out", ""))
         self.out_dir.setToolTip('Directory where output "training_data" or "test_data" directory will be written.')
         btn_out = QPushButton("Browse")
         btn_out.clicked.connect(lambda: self.select_dir(self.out_dir))
         row_out = QHBoxLayout(); row_out.addWidget(self.out_dir); row_out.addWidget(btn_out)
-        frm_in.addRow("Output Directory:", row_out)
+        frm_in.addRow("Output directory:", row_out)
 
         grp_in.setLayout(frm_in)
         layout.addWidget(grp_in)
@@ -80,7 +80,7 @@ class PreprocessingTab(QWidget):
         self.ditch_width.setSingleStep(0.5)
         self.ditch_width.setValue(float(self.settings.value("prep_width", 1.5)))
         self.ditch_width.setToolTip("Determines how wide the ditch features appear in the generated label mask.")
-        frm_par.addRow("Ditch Width (m):", self.ditch_width)
+        frm_par.addRow("Ditch width (m):", self.ditch_width)
 
         self.hpmf_thr = QDoubleSpinBox()
         self.hpmf_thr.setRange(-1.0, 1.0)
@@ -88,12 +88,12 @@ class PreprocessingTab(QWidget):
         self.hpmf_thr.setDecimals(3)
         self.hpmf_thr.setValue(float(self.settings.value("prep_thr", -0.075)))
         self.hpmf_thr.setToolTip("Keep pixels with HPMF ≤ threshold as label; higher values are ignored.")
-        frm_par.addRow("HPMF Threshold:", self.hpmf_thr)
+        frm_par.addRow("HPMF threshold:", self.hpmf_thr)
 
         grp_par.setLayout(frm_par)
         layout.addWidget(grp_par)
 
-        self.run_btn = QPushButton("Start Preprocessing")
+        self.run_btn = QPushButton("Start preprocessing")
         self.run_btn.setStyleSheet("font-weight: bold; padding: 6px;")
         self.run_btn.clicked.connect(self.start_preprocessing)
         layout.addWidget(self.run_btn)

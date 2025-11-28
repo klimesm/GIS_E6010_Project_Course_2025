@@ -41,6 +41,7 @@ class InferenceTab(QWidget):
         row = QHBoxLayout()
         self.python_exec = QComboBox()
         self.python_exec.setEditable(True)
+        self.python_exec.setToolTip("Path to python executable in conda environment containing all necessary libraries")
         self.python_exec.setMinimumWidth(350)
         row.addWidget(self.python_exec)
         row.addStretch()
@@ -65,6 +66,8 @@ class InferenceTab(QWidget):
         # Model dir
         row = QHBoxLayout()
         self.model_path = QLineEdit(self.settings.value("model_path", ""))
+        self.model_path.setToolTip("Directory containing one or more LightningDitchNet model checkpoints (*.ckpt) and "
+                                   "corresponding hyperparameter files (*.yaml)")
         btn = QPushButton("Browse")
         btn.clicked.connect(self.select_model)
         row.addWidget(self.model_path)
@@ -74,6 +77,7 @@ class InferenceTab(QWidget):
         # DEM input dir
         row = QHBoxLayout()
         self.dem_path = QLineEdit(self.settings.value("dem_path", ""))
+        self.dem_path.setToolTip("Directory containing DEM files (*.tif) to process.")
         btn = QPushButton("Browse")
         btn.clicked.connect(self.select_dem)
         row.addWidget(self.dem_path)
@@ -83,6 +87,7 @@ class InferenceTab(QWidget):
         # Output dir
         row = QHBoxLayout()
         self.out_path = QLineEdit(self.settings.value("out_path", ""))
+        self.out_path.setToolTip("Directory where output maps will be saved.")
         btn = QPushButton("Browse")
         btn.clicked.connect(self.select_output)
         row.addWidget(self.out_path)
@@ -111,6 +116,7 @@ class InferenceTab(QWidget):
         self.threshold.setRange(0.0, 1.0)
         self.threshold.setSingleStep(0.05)
         self.threshold.setValue(float(self.settings.value("threshold", 0.3)))
+        self.threshold.setToolTip("Binarization threshold for the output binary map.")
         row.addWidget(self.threshold)
         maps_layout.addRow("Binary map threshold:",row)
 
@@ -142,6 +148,7 @@ class InferenceTab(QWidget):
         self.device_box = QComboBox()
         self.device_box.addItems(["auto", "cpu", "cuda"])
         self.device_box.setCurrentText(self.settings.value("device", "auto"))
+        self.device_box.setToolTip('Computation device: "cpu", "cuda", or "auto" (automatically detect GPU if available).')
         row.addWidget(self.device_box)
         device_layout.addRow("Device:",row)
 
@@ -180,7 +187,6 @@ class InferenceTab(QWidget):
         self.settings.setValue("binary_map", "true" if self.cb_class.isChecked() else "false")
         self.settings.setValue("depth_map", "true" if self.cb_depth.isChecked() else "false")
         self.settings.setValue("device", self.device_box.currentText())
-
 
     # File selection
     def select_python(self):

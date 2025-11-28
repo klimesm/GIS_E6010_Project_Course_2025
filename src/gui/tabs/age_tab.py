@@ -36,6 +36,7 @@ class AgeDeterminationTab(QWidget):
         self.python_exec = QComboBox()
         self.python_exec.setEditable(True)
         self.python_exec.setMinimumWidth(350)
+        self.python_exec.setToolTip("Path to python executable in conda environment containing all necessary libraries")
         row.addWidget(self.python_exec)
         row.addStretch()
 
@@ -65,12 +66,6 @@ class AgeDeterminationTab(QWidget):
         self.run_btn.setStyleSheet("font-weight: bold; padding: 6px;")
         self.run_btn.clicked.connect(self.run_age)
         main.addWidget(self.run_btn)
-        # run_row = QHBoxLayout()
-        # self.run_btn = QPushButton("Run age determination")
-        # self.run_btn.clicked.connect(self.run_age)
-        # run_row.addWidget(self.run_btn)
-        # # run_row.addStretch()
-        # main.addLayout(run_row)
 
         self.log = QTextEdit()
         self.log.setReadOnly(True)
@@ -169,7 +164,6 @@ class AgeDeterminationTab(QWidget):
 
         self.methods_tabs.addTab(self.vectors_widget, "Vector-based")
 
-
     # raster-based sub-tab
     def _build_rasters_tab(self):
         self.rasters_widget = QWidget()
@@ -237,10 +231,10 @@ class AgeDeterminationTab(QWidget):
         layout.addWidget(parameter_group)
 
         self.methods_tabs.addTab(self.rasters_widget, "Raster-based")
+
     # Tab change
     def _on_tab_changed(self, idx):
         self.settings.setValue("age_method_tab_index", idx)
-
 
     # Vector-table helpers
     def remove_selected_vec_rows(self):
@@ -305,7 +299,7 @@ class AgeDeterminationTab(QWidget):
     def select_python(self):
         file, _ = QFileDialog.getOpenFileName(self, "Select python executable", "", "Python (python*)")
         if file:
-            self.python_exec.setText(file)
+            self.python_exec.setEditText(file)
             self.settings.setValue("age_python_exec", file)
 
     def select_prob_map(self):
@@ -347,7 +341,6 @@ class AgeDeterminationTab(QWidget):
     def run_age(self):
         # Save some settings
         self.settings.setValue("age_python_exec", self.python_exec.currentText())
-
         self._save_vec_table_to_settings()
         self.settings.setValue("age_vec_prob_thr", self.vec_prob_thr.value())
         self.settings.setValue("age_vec_min_overlap", self.vec_min_overlap.value())

@@ -32,7 +32,7 @@ class TestTab(QWidget):
         btn_browse_py = QPushButton("Browse")
         btn_browse_py.clicked.connect(lambda: self.select_file(self.python_exec, "Python (python.exe)"))
 
-        env_box.addWidget(QLabel("Python Interpreter:"))
+        env_box.addWidget(QLabel("Python executable:"))
         env_box.addWidget(self.python_exec)
         env_box.addWidget(btn_browse_py)
         layout.addLayout(env_box)
@@ -45,28 +45,28 @@ class TestTab(QWidget):
         btn_mod = QPushButton("Browse .ckpt")
         btn_mod.clicked.connect(lambda: self.select_file(self.model_path, "Checkpoint (*.ckpt)"))
         row_mod = QHBoxLayout(); row_mod.addWidget(self.model_path); row_mod.addWidget(btn_mod)
-        frm_in.addRow("Model Checkpoint Path:", row_mod)
+        frm_in.addRow("Model checkpoint:", row_mod)
 
         self.hparams_path = QLineEdit(self.settings.value("test_hparams", ""))
         self.hparams_path.setToolTip("Path to the hparams.yaml file saved during training.")
         btn_yaml = QPushButton("Browse .yaml")
         btn_yaml.clicked.connect(lambda: self.select_file(self.hparams_path, "Hparams (*.yaml)"))
         row_yaml = QHBoxLayout(); row_yaml.addWidget(self.hparams_path); row_yaml.addWidget(btn_yaml)
-        frm_in.addRow("Hparams Path:", row_yaml)
+        frm_in.addRow("Hyperparameters:", row_yaml)
 
         self.feature_dir = QLineEdit(self.settings.value("test_feat", ""))
         self.feature_dir.setToolTip("Path to directory containing input feature images (e.g. test_data/feature_chips).")
         btn_feat = QPushButton("Browse")
         btn_feat.clicked.connect(lambda: self.select_dir(self.feature_dir))
         row_feat = QHBoxLayout(); row_feat.addWidget(self.feature_dir); row_feat.addWidget(btn_feat)
-        frm_in.addRow("Feature Dir:", row_feat)
+        frm_in.addRow("Feature directory:", row_feat)
 
         self.label_dir = QLineEdit(self.settings.value("test_label", ""))
         self.label_dir.setToolTip("Path to directory containing label (mask) images (e.g. test_data/label_chips).")
         btn_label = QPushButton("Browse")
         btn_label.clicked.connect(lambda: self.select_dir(self.label_dir))
         row_label = QHBoxLayout(); row_label.addWidget(self.label_dir); row_label.addWidget(btn_label)
-        frm_in.addRow("Label Dir:", row_label)
+        frm_in.addRow("Label directory:", row_label)
         
         grp_in.setLayout(frm_in)
         layout.addWidget(grp_in)
@@ -76,11 +76,11 @@ class TestTab(QWidget):
         
         self.batch_size = QSpinBox(); self.batch_size.setRange(1, 2048); self.batch_size.setValue(int(self.settings.value("test_bs", 4)))
         self.batch_size.setToolTip("Batch size for testing.")
-        frm_par.addRow("Batch Size:", self.batch_size)
+        frm_par.addRow("Batch size:", self.batch_size)
 
         self.num_workers = QSpinBox(); self.num_workers.setRange(0, 64); self.num_workers.setValue(int(self.settings.value("test_workers", 0)))
         self.num_workers.setToolTip("Number of parallel CPU workers used for loading batches from disk.")
-        frm_par.addRow("Num Workers:", self.num_workers)
+        frm_par.addRow("Num workers:", self.num_workers)
 
         self.precision = QComboBox()
         self.precision.addItems(["32-true", "16-mixed", "16-true", "bf16-mixed", "64-true"])
@@ -91,7 +91,7 @@ class TestTab(QWidget):
         grp_par.setLayout(frm_par)
         layout.addWidget(grp_par)
 
-        self.run_btn = QPushButton("Start Testing")
+        self.run_btn = QPushButton("Start testing")
         self.run_btn.setStyleSheet("font-weight: bold; padding: 6px;")
         self.run_btn.clicked.connect(self.start_test)
         layout.addWidget(self.run_btn)
