@@ -40,7 +40,7 @@ GIS_E6010_Project_Course_2025/
 
 ## 🛠 Environment Setup and Usage
 
-A **complete and detailed installation guide and usage instructions are provided in the project [Documentation](Documentation).  
+A complete and detailed installation guide and usage instructions are provided in the project [Documentation](Documentation).  
 The documentation covers everything needed to run the project, including:
 
 - full environment setup guide (Conda)
